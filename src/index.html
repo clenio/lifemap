@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
+    <title>LifeMap - Mindmap Interativo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            background-color: #1a1e21;
+            padding: 2em;
+            color: #ffffff;
+        }
+
+        .mindmap {
+            position: relative;
+            padding: 20px;
+            overflow-x: auto;
+            max-width: 100%;
+            width: 100%;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+
+        .mindmap::-webkit-scrollbar {
+            display: none; /* Chrome, Safari and Opera */
+        }
+
+        .mindmap ul {
+            position: relative;
+            padding: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5em;
+        }
+
+        .mindmap li {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            padding-left: 2em;
+        }
+
+        .mindmap li:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.7em;
+            width: 2em;
+            height: 1px;
+            background-color: #666;
+        }
+
+        /* Linha vertical para todos os nós exceto o último */
+        .mindmap li:not(:last-child):after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1px;
+            height: calc(100% + 0.5em);
+            background-color: #666;
+        }
+
+        /* Linha vertical para o último filho (apenas se tiver irmãos) */
+        .mindmap li:last-child:not(:first-child):after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1px;
+            height: 0.7em;
+            background-color: #666;
+        }
+
+        /* Ajusta a linha vertical para começar do meio do nó */
+        .mindmap li:first-child:not(:last-child):after {
+            top: 0.7em;
+            height: calc(100% - 0.7em + 0.5em);
+        }
+
+        /* Adiciona linha vertical para o penúltimo nó que se estende até o último */
+        .mindmap li:nth-last-child(2):after {
+            height: calc(100% + 0.7em);
+        }
+
+        /* Remove as linhas do nó raiz */
+        .mindmap > ul > li:before,
+        .mindmap > ul > li:after {
+            display: none;
+        }
+
+        .mindmap li > span {
+            display: inline-block;
+            padding: 0.2em;
+            white-space: nowrap;
+            position: relative;
+            z-index: 1;
+            color: inherit;
+            cursor: pointer;
+            opacity: 0.1;
+            transition: opacity 0.3s ease;
+        }
+
+        .mindmap li > span.has-children::after {
+            content: ' [+]';
+            color: #ff8c00;
+            margin-left: 0.5em;
+        }
+
+        .mindmap li.collapsed > div {
+            display: none;
+        }
+
+        .mindmap li.collapsed > span.has-children::after {
+            content: ' [+]';
+        }
+
+        .mindmap li:not(.collapsed) > span.has-children::after {
+            content: ' [-]';
+        }
+
+        /* Indentação dos níveis */
+        .mindmap ul ul {
+            margin-left: 2em;
+        }
+
+        /* Cores diferentes por nível para melhor visualização */
+        .mindmap > ul > li > span { color: #ffffff; } /* Nível 1 */
+        .mindmap > ul > li > div > ul > li > span { color: #e0e0e0; } /* Nível 2 */
+        .mindmap > ul > li > div > ul > li > div > ul > li > span { color: #c0c0c0; } /* Nível 3 */
+        .mindmap > ul > li > div > ul > li > div > ul > li > div > ul > li > span { color: #a0a0a0; } /* Nível 4 */
+        .mindmap > ul > li > div > ul > li > div > ul > li > div > ul > li > div > ul > li > span { color: #909090; } /* Nível 5 */
+        .mindmap > ul > li > div > ul > li > div > ul > li > div > ul > li > div > ul > li > div > ul > li > span { color: #808080; } /* Nível 6 */
+
+        /* Mantém a cor do texto quando selecionado ou em busca */
+        .mindmap li > span.selected,
+        .mindmap li > span.search-match,
+        .mindmap li > span.current-match {
+            color: inherit !important;
+            opacity: 1;
+        }
+
+        /* Estilo para o item selecionado */
+        .mindmap li > span.selected {
+            background-color: #2c3e50;
+            border-radius: 3px;
+            outline: 1px solid #3498db;
+            opacity: 1;
+        }
+
+        /* Mantém opacidade total para o nó selecionado e seus filhos */
+        .mindmap li > span.selected,
+        .mindmap li > span.selected ~ div span {
+            opacity: 1;
+        }
+
+        /* Mantém opacidade total para os pais do nó selecionado */
+        .mindmap li:has(span.selected) > span,
+        .mindmap li:has(> div li > span.selected) > span {
+            opacity: 1;
+        }
+
+        /* Mantém opacidade total para irmãos do nó selecionado */
+        .mindmap li > span.selected ~ div ul > li > span {
+            opacity: 1;
+        }
+
+        /* Estilos para a busca */
+        .search-container {
+            position: fixed;
+            bottom: 1em;
+            left: 1em;
+            background-color: rgba(0,0,0,0.8);
+            padding: 1em;
+            border-radius: 5px;
+            display: none;
+            color: #aaa;
+        }
+
+        .search-container.active {
+            display: block;
+        }
+
+        .search-container input {
+            background-color: #2c3e50;
+            border: 1px solid #3498db;
+            color: white;
+            padding: 0.3em;
+            border-radius: 3px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .search-container .results {
+            margin-top: 0.5em;
+            font-size: 0.9em;
+        }
+
+        /* Estilo para item encontrado na busca */
+        .mindmap li > span.search-match {
+            background-color: #f39c12;
+            color: #000;
+        }
+
+        .mindmap li > span.current-match {
+            background-color: #e67e22;
+            color: #fff;
+        }
+
+        /* Ajuda de navegação - inicialmente oculta */
+        .help {
+            position: fixed;
+            bottom: 1em;
+            right: 1em;
+            background-color: rgba(0,0,0,0.8);
+            padding: 1em;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #aaa;
+            display: none;
+        }
+
+        .help kbd {
+            background-color: #2c3e50;
+            padding: 0.2em 0.5em;
+            border-radius: 3px;
+            margin: 0 0.3em;
+        }
+
+        /* Estilo para nó em edição */
+        .mindmap li > span.editing {
+            background-color: #2c3e50;
+            border: 1px solid #e67e22;
+            border-radius: 3px;
+            min-width: 100px;
+        }
+
+        /* Estilo para nós com link */
+        .mindmap li > span.has-link {
+            border-bottom: 1px dashed #3498db;
+        }
+
+        /* Modal de Link */
+        .link-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #2c3e50;
+            padding: 1em;
+            border-radius: 5px;
+            border: 1px solid #3498db;
+            display: none;
+            z-index: 1000;
+            min-width: 300px;
+        }
+
+        .link-modal.active {
+            display: block;
+        }
+
+        .link-modal input {
+            width: 100%;
+            background-color: #34495e;
+            border: 1px solid #3498db;
+            color: white;
+            padding: 0.5em;
+            border-radius: 3px;
+            margin-bottom: 1em;
+            font-family: inherit;
+        }
+
+        .link-modal .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5em;
+        }
+
+        .link-modal button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5em 1em;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .link-modal button.cancel {
+            background-color: #95a5a6;
+        }
+
+        .link-modal button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="mindmap">
+        <ul>
+            <li>
+                <span>Root</span>
+            </li>
+        </ul>
+    </div>
+    <div class="search-container">
+        <input type="text" placeholder="Buscar..." />
+        <div class="results"></div>
+    </div>
+    <div class="help">
+        Navegação: 
+        <kbd>h</kbd> esquerda 
+        <kbd>j</kbd> baixo 
+        <kbd>k</kbd> cima 
+        <kbd>l</kbd> direita
+        <kbd>space</kbd> expandir/colapsar
+        <kbd>/</kbd> buscar
+        <kbd>n</kbd> próximo
+        <kbd>N</kbd> anterior
+        <kbd>o</kbd> novo abaixo
+        <kbd>O</kbd> novo acima
+        <kbd>tab</kbd> novo filho
+        <kbd>e</kbd> editar
+        <kbd>i</kbd> editar início
+        <kbd>A</kbd> editar fim
+        <kbd>c</kbd> substituir
+        <kbd>f</kbd> focar
+        <kbd>?</kbd> ajuda
+        <kbd>⌘/ctrl</kbd>+<kbd>k</kbd> adicionar link
+        <kbd>⇧</kbd>+<kbd>u</kbd> abrir link
+    </div>
+    <div class="link-modal">
+        <input type="text" placeholder="Cole o link aqui..." />
+        <div class="buttons">
+            <button class="cancel">Cancelar</button>
+            <button class="save">Salvar</button>
+        </div>
+    </div>
+    <script>
+        const { ipcRenderer } = require('electron');
+        const { loadMindmapFromMarkdown } = require('./markdown-parser');
+        const { convertMindmapToMarkdown } = require('./html-to-markdown');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const mindmap = document.querySelector('.mindmap');
+            const searchContainer = document.querySelector('.search-container');
+            const searchInput = searchContainer.querySelector('input');
+            const searchResults = searchContainer.querySelector('.results');
+            const linkModal = document.querySelector('.link-modal');
+            const linkInput = linkModal.querySelector('input');
+            const linkSaveButton = linkModal.querySelector('.save');
+            const linkCancelButton = linkModal.querySelector('.cancel');
+            let currentSelected = null;
+            let searchMatches = [];
+            let currentMatchIndex = -1;
+            let copiedNode = null;
+            
+            // Carrega o conteúdo inicial do arquivo markdown
+            const mindmapContent = loadMindmapFromMarkdown();
+            if (mindmapContent) {
+                mindmap.innerHTML = mindmapContent;
+                // Seleciona o primeiro nó após carregar o conteúdo
+                currentSelected = mindmap.querySelector('li > span:first-of-type');
+                if (currentSelected) {
+                    currentSelected.classList.add('selected');
+                }
+            }
+            
+            // Função para salvar o mindmap
+            function saveMindmap() {
+                const markdown = convertMindmapToMarkdown(mindmap);
+                ipcRenderer.send('save-mindmap', markdown);
+            }
+
+            // Salva automaticamente após cada modificação
+            const observer = new MutationObserver((mutations) => {
+                // Ignora mudanças que afetam apenas classes
+                const hasNonClassChange = mutations.some(mutation => {
+                    return mutation.type !== 'attributes' || 
+                           (mutation.type === 'attributes' && mutation.attributeName !== 'class');
+                });
+
+                if (hasNonClassChange) {
+                    saveMindmap();
+                }
+            });
+
+            observer.observe(mindmap, {
+                childList: true,
+                subtree: true,
+                characterData: true,
+                attributes: true,
+                attributeFilter: ['class', 'contenteditable']
+            });
+
+            // Inicializa todos os nós com filhos como colapsados
+            function initializeNodes() {
+                const nodesWithChildren = mindmap.querySelectorAll('li:has(> div > ul)');
+                nodesWithChildren.forEach(node => {
+                    node.classList.add('collapsed');
+                });
+                
+                // Expande o caminho até o nó selecionado inicialmente
+                let parent = currentSelected.closest('li').parentElement;
+                while (parent) {
+                    const parentLi = parent.closest('li');
+                    if (parentLi) {
+                        parentLi.classList.remove('collapsed');
+                    }
+                    parent = parentLi ? parentLi.parentElement : null;
+                }
+            }
+
+            // Inicializa a seleção e os estados dos nós
+            initializeNodes();
+
+            // Função para encontrar o próximo elemento navegável
+            function findNextNavigableElement(direction, current) {
+                const li = current.closest('li');
+                let nextElement = null;
+                
+                switch(direction) {
+                    case 'left': // h - vai para o pai
+                        const parentLi = li.parentElement.closest('li');
+                        nextElement = parentLi ? parentLi.querySelector(':scope > span') : null;
+                        break;
+                        
+                    case 'right': // l - vai para o primeiro filho
+                        // Sempre expande e vai para o primeiro filho se tiver filhos
+                        if (li.querySelector(':scope > div > ul > li')) {
+                            li.classList.remove('collapsed');
+                            nextElement = li.querySelector(':scope > div > ul > li > span');
+                        }
+                        break;
+                        
+                    case 'up': // k - vai para o irmão anterior
+                        nextElement = li.previousElementSibling ? 
+                            li.previousElementSibling.querySelector(':scope > span') : null;
+                        break;
+                        
+                    case 'down': // j - vai para o próximo irmão
+                        nextElement = li.nextElementSibling ? 
+                            li.nextElementSibling.querySelector(':scope > span') : null;
+                        break;
+                }
+
+                return nextElement;
+            }
+
+            // Função para expandir/colapsar um nó
+            function toggleNode(span) {
+                const li = span.closest('li');
+                const hasChildren = li.querySelector(':scope > div > ul') !== null;
+                
+                if (hasChildren) {
+                    li.classList.toggle('collapsed');
+                }
+            }
+
+            // Função para copiar um nó e seus filhos
+            function copyNode(node) {
+                const li = node.closest('li');
+                return li.cloneNode(true);
+            }
+
+            // Função para deletar um nó
+            function deleteNode(span) {
+                const li = span.closest('li');
+                const parentLi = li.parentElement.closest('li');
+                const previousSibling = li.previousElementSibling;
+                
+                // Seleciona o próximo nó antes de remover o atual
+                let nextSpan;
+                if (previousSibling) {
+                    // Prioriza o nó anterior
+                    nextSpan = previousSibling.querySelector('span');
+                } else if (li.nextElementSibling) {
+                    // Se não houver anterior, tenta o próximo
+                    nextSpan = li.nextElementSibling.querySelector('span');
+                } else if (parentLi) {
+                    // Se não houver irmãos, vai para o pai
+                    nextSpan = parentLi.querySelector('span');
+                }
+                
+                // Se era o último filho, remove a classe has-children do pai
+                if (parentLi && li.parentElement.children.length === 1) {
+                    parentLi.querySelector(':scope > span').classList.remove('has-children');
+                    parentLi.querySelector(':scope > div').remove();
+                }
+                
+                // Remove o nó atual
+                li.remove();
+                
+                // Atualiza a seleção
+                if (nextSpan) {
+                    currentSelected.classList.remove('selected');
+                    nextSpan.classList.add('selected');
+                    currentSelected = nextSpan;
+                    nextSpan.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+
+            // Função para colar um nó
+            function pasteNode(targetSpan, copiedNode) {
+                if (!copiedNode) return;
+                
+                const targetLi = targetSpan.closest('li');
+                const newNode = copiedNode.cloneNode(true);
+                
+                // Remove classes de seleção e busca do nó colado
+                const spans = newNode.querySelectorAll('span');
+                spans.forEach(span => {
+                    span.classList.remove('selected', 'search-match', 'current-match');
+                });
+                
+                // Verifica se já existe uma div para os filhos
+                let childrenDiv = targetLi.querySelector(':scope > div');
+                if (!childrenDiv) {
+                    childrenDiv = document.createElement('div');
+                    const ul = document.createElement('ul');
+                    childrenDiv.appendChild(ul);
+                    targetLi.appendChild(childrenDiv);
+                    targetSpan.classList.add('has-children');
+                }
+                
+                // Adiciona como filho
+                const ul = childrenDiv.querySelector('ul');
+                ul.appendChild(newNode);
+                
+                // Expande o nó pai se estiver colapsado
+                targetLi.classList.remove('collapsed');
+                
+                // Seleciona o novo nó
+                const newSpan = newNode.querySelector('span');
+                currentSelected.classList.remove('selected');
+                newSpan.classList.add('selected');
+                currentSelected = newSpan;
+                newSpan.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            // Função para realizar a busca
+            function performSearch(query) {
+                // Limpa matches anteriores
+                searchMatches.forEach(match => {
+                    match.classList.remove('search-match', 'current-match');
+                });
+                searchMatches = [];
+                currentMatchIndex = -1;
+
+                if (!query) {
+                    searchResults.textContent = '';
+                    return;
+                }
+
+                // Encontra todos os spans que contêm o texto
+                const spans = mindmap.querySelectorAll('li > span');
+                spans.forEach(span => {
+                    if (span.textContent.toLowerCase().includes(query.toLowerCase())) {
+                        searchMatches.push(span);
+                        span.classList.add('search-match');
+                    }
+                });
+
+                // Atualiza resultados com o formato "atual/total"
+                if (searchMatches.length > 0) {
+                    navigateToMatch(0);
+                } else {
+                    searchResults.textContent = 'Nenhum resultado encontrado';
+                }
+            }
+
+            // Função para navegar entre resultados
+            function navigateToMatch(index) {
+                if (searchMatches.length === 0) return;
+
+                // Remove highlight anterior
+                if (currentMatchIndex >= 0) {
+                    searchMatches[currentMatchIndex].classList.remove('current-match');
+                }
+
+                // Atualiza índice
+                currentMatchIndex = index;
+                if (currentMatchIndex >= searchMatches.length) currentMatchIndex = 0;
+                if (currentMatchIndex < 0) currentMatchIndex = searchMatches.length - 1;
+
+                // Destaca novo match
+                const match = searchMatches[currentMatchIndex];
+                match.classList.add('current-match');
+
+                // Expande caminho e seleciona
+                expandPathToNode(match);
+                currentSelected.classList.remove('selected');
+                match.classList.add('selected');
+                currentSelected = match;
+                match.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Atualiza contador no formato "atual/total"
+                searchResults.textContent = `${currentMatchIndex + 1}/${searchMatches.length}`;
+            }
+
+            // Função para expandir o caminho até um nó
+            function expandPathToNode(node) {
+                let parent = node.closest('li').parentElement;
+                while (parent) {
+                    const parentLi = parent.closest('li');
+                    if (parentLi) {
+                        parentLi.classList.remove('collapsed');
+                    }
+                    parent = parentLi ? parentLi.parentElement : null;
+                }
+            }
+
+            // Função para iniciar edição com diferentes modos
+            function startEditing(span, mode = 'normal') {
+                span.contentEditable = true;
+                span.classList.add('editing');
+                // Guarda o texto original antes da edição
+                span.dataset.originalText = span.textContent;
+                span.focus();
+
+                const range = document.createRange();
+                const sel = window.getSelection();
+
+                switch(mode) {
+                    case 'select-all': // c
+                        range.selectNodeContents(span);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        break;
+                    case 'start': // i
+                        range.setStart(span, 0);
+                        range.setEnd(span, 0);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        break;
+                    case 'end': // A ou e
+                        range.selectNodeContents(span);
+                        range.collapse(false);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        break;
+                }
+            }
+
+            // Função para criar um novo nó
+            function createNewNode() {
+                const span = document.createElement('span');
+                span.contentEditable = true;
+                span.textContent = 'Novo item';
+                span.classList.add('editing');
+                
+                const li = document.createElement('li');
+                li.appendChild(span);
+                
+                return li;
+            }
+
+            // Função para finalizar edição
+            function finishEditing(span, shouldSave = true) {
+                span.classList.remove('editing');
+                span.contentEditable = false;
+                
+                if (!shouldSave) {
+                    // Restaura o texto original se cancelou a edição
+                    span.textContent = span.dataset.originalText;
+                } else if (!span.textContent.trim()) {
+                    // Remove o nó apenas se confirmou a edição e o texto está vazio
+                    const li = span.closest('li');
+                    const parentLi = li.parentElement.closest('li');
+                    li.remove();
+                    
+                    // Se era o último filho, remove a classe has-children do pai
+                    if (parentLi && parentLi.querySelector(':scope > div > ul').children.length === 0) {
+                        parentLi.querySelector(':scope > span').classList.remove('has-children');
+                        parentLi.querySelector(':scope > div').remove();
+                    }
+                }
+                
+                // Limpa o texto original salvo
+                delete span.dataset.originalText;
+            }
+
+            // Função para adicionar um nó filho
+            function addChildNode(parentSpan) {
+                const parentLi = parentSpan.closest('li');
+                
+                // Verifica se já existe uma div para os filhos
+                let childrenDiv = parentLi.querySelector(':scope > div');
+                if (!childrenDiv) {
+                    childrenDiv = document.createElement('div');
+                    const ul = document.createElement('ul');
+                    childrenDiv.appendChild(ul);
+                    parentLi.appendChild(childrenDiv);
+                    parentSpan.classList.add('has-children');
+                }
+
+                const ul = childrenDiv.querySelector('ul');
+                const newNode = createNewNode();
+                ul.appendChild(newNode);
+                
+                // Expande o nó pai se estiver colapsado
+                parentLi.classList.remove('collapsed');
+                
+                // Seleciona e foca o novo nó
+                const newSpan = newNode.querySelector('span');
+                currentSelected.classList.remove('selected');
+                newSpan.classList.add('selected');
+                currentSelected = newSpan;
+                newSpan.focus();
+                
+                // Seleciona todo o texto para fácil edição
+                const range = document.createRange();
+                range.selectNodeContents(newSpan);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+
+            // Função para adicionar um nó irmão (acima ou abaixo)
+            function addSiblingNode(referenceSpan, addAfter = true) {
+                const referenceLi = referenceSpan.closest('li');
+                const newNode = createNewNode();
+                
+                if (addAfter) {
+                    referenceLi.after(newNode);
+                } else {
+                    referenceLi.before(newNode);
+                }
+                
+                // Seleciona e foca o novo nó
+                const newSpan = newNode.querySelector('span');
+                currentSelected.classList.remove('selected');
+                newSpan.classList.add('selected');
+                currentSelected = newSpan;
+                newSpan.focus();
+                
+                // Seleciona todo o texto para fácil edição
+                const range = document.createRange();
+                range.selectNodeContents(newSpan);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+
+            // Função para colapsar todos os nós exceto o caminho até o nó selecionado
+            function focusNode(node) {
+                // Primeiro, colapsa todos os nós
+                const allNodes = mindmap.querySelectorAll('li:has(> div > ul)');
+                allNodes.forEach(node => {
+                    node.classList.add('collapsed');
+                });
+                
+                // Depois, expande o caminho até o nó selecionado
+                let parent = node.closest('li');
+                while (parent) {
+                    parent.classList.remove('collapsed');
+                    parent = parent.parentElement.closest('li');
+                }
+                
+                // Expande também os filhos diretos do nó selecionado
+                const selectedLi = node.closest('li');
+                if (selectedLi) {
+                    selectedLi.classList.remove('collapsed');
+                }
+            }
+
+            // Função para mostrar o modal de link
+            function showLinkModal() {
+                linkModal.classList.add('active');
+                const currentLink = currentSelected.dataset.link || '';
+                linkInput.value = currentLink;
+                linkInput.focus();
+            }
+
+            // Função para esconder o modal de link
+            function hideLinkModal() {
+                linkModal.classList.remove('active');
+                linkInput.value = '';
+            }
+
+            // Função para salvar o link
+            function saveLink() {
+                const link = linkInput.value.trim();
+                if (link) {
+                    currentSelected.dataset.link = link;
+                    currentSelected.classList.add('has-link');
+                } else {
+                    delete currentSelected.dataset.link;
+                    currentSelected.classList.remove('has-link');
+                }
+                hideLinkModal();
+            }
+
+            // Função para abrir o link
+            function openLink() {
+                const link = currentSelected.dataset.link;
+                if (link) {
+                    ipcRenderer.send('open-external-link', link);
+                }
+            }
+
+            // Event listeners para o modal de link
+            linkSaveButton.addEventListener('click', saveLink);
+            linkCancelButton.addEventListener('click', hideLinkModal);
+            linkInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    saveLink();
+                } else if (e.key === 'Escape') {
+                    hideLinkModal();
+                }
+            });
+
+            // Handler de teclado atualizado
+            document.addEventListener('keydown', function(e) {
+                // Se estiver editando um nó
+                if (document.activeElement.tagName === 'SPAN' && document.activeElement.contentEditable === 'true') {
+                    switch(e.key) {
+                        case 'Enter':
+                            e.preventDefault();
+                            finishEditing(document.activeElement, true);
+                            break;
+                        case 'Escape':
+                            e.preventDefault();
+                            finishEditing(document.activeElement, false);
+                            break;
+                    }
+                    return;
+                }
+
+                // Se o modal de link está ativo
+                if (linkModal.classList.contains('active')) {
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        return;
+                    }
+                    return;
+                }
+
+                // Se a busca está ativa
+                if (searchContainer.classList.contains('active')) {
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        return;
+                    }
+                    
+                    switch(e.key) {
+                        case 'Escape':
+                            searchContainer.classList.remove('active');
+                            performSearch(''); // Limpa resultados
+                            searchInput.blur(); // Remove o foco do input
+                            break;
+                        case 'Enter':
+                            e.preventDefault();
+                            if (currentMatchIndex >= 0) {
+                                // Seleciona o nó atual do match
+                                const match = searchMatches[currentMatchIndex];
+                                currentSelected.classList.remove('selected');
+                                match.classList.add('selected');
+                                currentSelected = match;
+                                
+                                // Fecha a busca mantendo os matches
+                                searchContainer.classList.remove('active');
+                                searchInput.value = '';
+                                searchResults.textContent = '';
+                                searchInput.blur();
+                            }
+                            break;
+                        case 'n':
+                            e.preventDefault();
+                            if (searchMatches.length > 0) {
+                                navigateToMatch(currentMatchIndex + (e.shiftKey ? -1 : 1));
+                            }
+                            break;
+                    }
+                    return;
+                }
+
+                let nextElement = null;
+
+                // Primeiro, trata os atalhos com modificadores (Ctrl, Cmd, Shift)
+                if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault();
+                    showLinkModal();
+                    return;
+                }
+
+                switch(e.key.toLowerCase()) {
+                    case '/':
+                        e.preventDefault();
+                        searchContainer.classList.add('active');
+                        searchInput.value = '';
+                        searchInput.focus();
+                        break;
+                    case 'u':
+                        if (e.shiftKey) {
+                            e.preventDefault();
+                            openLink();
+                            return;
+                        }
+                        break;
+                    case 'escape':
+                        e.preventDefault();
+                        // Limpa os resultados da busca
+                        searchMatches.forEach(match => {
+                            match.classList.remove('search-match', 'current-match');
+                        });
+                        searchMatches = [];
+                        currentMatchIndex = -1;
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        startEditing(currentSelected, 'end');
+                        break;
+                    case 'c':
+                        e.preventDefault();
+                        startEditing(currentSelected, 'select-all');
+                        break;
+                    case 'a':
+                        if (e.shiftKey) { // A
+                            e.preventDefault();
+                            startEditing(currentSelected, 'end');
+                        }
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        startEditing(currentSelected, 'start');
+                        break;
+                    case 'o':
+                        e.preventDefault();
+                        if (!e.shiftKey) {
+                            // o: adiciona irmão abaixo
+                            addSiblingNode(currentSelected, true);
+                        } else {
+                            // O: adiciona irmão acima
+                            addSiblingNode(currentSelected, false);
+                        }
+                        break;
+                    case 'tab':
+                        e.preventDefault();
+                        // Tab: adiciona filho
+                        addChildNode(currentSelected);
+                        break;
+                    case 'n':
+                        e.preventDefault();
+                        if (searchMatches.length > 0) {
+                            navigateToMatch(currentMatchIndex + (e.shiftKey ? -1 : 1));
+                        }
+                        break;
+                    case 'h':
+                        nextElement = findNextNavigableElement('left', currentSelected);
+                        break;
+                    case 'j':
+                        nextElement = findNextNavigableElement('down', currentSelected);
+                        break;
+                    case 'k':
+                        if (!e.metaKey && !e.ctrlKey) { // Garante que é apenas o 'k' sem modificadores
+                            nextElement = findNextNavigableElement('up', currentSelected);
+                        }
+                        break;
+                    case 'l':
+                        nextElement = findNextNavigableElement('right', currentSelected);
+                        break;
+                    case ' ':
+                    case 'enter':
+                        e.preventDefault();
+                        toggleNode(currentSelected);
+                        break;
+                    case '?':
+                        document.querySelector('.help').style.display = 
+                            document.querySelector('.help').style.display === 'none' ? 'block' : 'none';
+                        break;
+                    case '#':
+                    case '3':
+                        if (e.shiftKey) { // Shift+3
+                            e.preventDefault();
+                            deleteNode(currentSelected);
+                        }
+                        break;
+                    case 'y':
+                        e.preventDefault();
+                        copiedNode = copyNode(currentSelected);
+                        break;
+                    case 'p':
+                        e.preventDefault();
+                        if (copiedNode) {
+                            pasteNode(currentSelected, copiedNode);
+                        }
+                        break;
+                    case 'f':
+                        e.preventDefault();
+                        focusNode(currentSelected);
+                        break;
+                }
+
+                if (nextElement) {
+                    currentSelected.classList.remove('selected');
+                    nextElement.classList.add('selected');
+                    currentSelected = nextElement;
+                    nextElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+
+            // Evento de input para busca
+            searchInput.addEventListener('input', function(e) {
+                performSearch(e.target.value);
+            });
+
+            // Adiciona interatividade ao clicar
+            mindmap.addEventListener('click', function(e) {
+                if (e.target.tagName === 'SPAN') {
+                    currentSelected.classList.remove('selected');
+                    e.target.classList.add('selected');
+                    currentSelected = e.target;
+                    toggleNode(e.target);
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

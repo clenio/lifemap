@@ -1,0 +1,23 @@
+{
+  "name": "lifemap",
+  "version": "1.0.0",
+  "description": "Um aplicativo de mindmap interativo",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mindmap",
+    "electron",
+    "productivity"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^29.1.4"
+  },
+  "dependencies": {
+    "marked": "^15.0.7"
+  }
+}
