@@ -114,7 +114,7 @@
             z-index: 1;
             color: inherit;
             cursor: pointer;
-            opacity: 0.1;
+            opacity: 0.5;
             transition: opacity 0.3s ease;
         }
 
@@ -245,11 +245,22 @@
         }
 
         /* Estilo para nó em edição */
-        .mindmap li > span.editing {
+        .mindmap li > span .node-text.editing {
             background-color: #2c3e50;
             border: 1px solid #e67e22;
             border-radius: 3px;
             min-width: 100px;
+        }
+
+        /* Ajusta o estilo do texto do nó */
+        .mindmap li > span .node-text {
+            display: inline;
+            padding: 0.2em;
+        }
+
+        /* Mantém a opacidade do texto do nó */
+        .mindmap li > span .node-text {
+            opacity: inherit;
         }
 
         /* Estilo para nós com link */
@@ -519,6 +530,35 @@
             background-color: #2980b9;
             outline: 2px solid #3498db;
         }
+
+        /* Estilo para o feedback de salvamento */
+        .save-feedback {
+            position: fixed;
+            bottom: 1em;
+            right: 1em;
+            background-color: rgba(0,0,0,0.8);
+            color: #2ecc71;
+            padding: 0.5em 1em;
+            border-radius: 3px;
+            font-size: 0.9em;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .save-feedback.error {
+            color: #e74c3c;
+        }
+        
+        .save-feedback.active {
+            display: block;
+            animation: fadeOut 2s forwards;
+        }
+        
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -577,6 +617,7 @@
         </div>
         <div class="error"></div>
     </div>
+    <div class="save-feedback">Salvando...</div>
     <script>
         const { ipcRenderer } = require('electron');
         const { loadMindmapFromMarkdown } = require('./markdown-parser');
@@ -743,21 +784,83 @@
                 }
             }
             
-            // Função para salvar o mindmap
+            // Elementos do feedback de salvamento
+            const saveFeedback = document.querySelector('.save-feedback');
+            
+            // Função para mostrar feedback
+            function showSaveFeedback(message, isError = false) {
+                saveFeedback.textContent = message;
+                saveFeedback.classList.toggle('error', isError);
+                saveFeedback.classList.add('active');
+                
+                // Remove a classe active após a animação
+                setTimeout(() => {
+                    saveFeedback.classList.remove('active');
+                }, 2000);
+            }
+            
+            // Função para salvar o mindmap atualizada
             function saveMindmap() {
                 const markdown = convertMindmapToMarkdown(mindmap);
                 ipcRenderer.send('save-mindmap', markdown);
+                showSaveFeedback('Salvando...');
             }
+            
+            // Handlers para eventos de salvamento
+            ipcRenderer.on('save-success', () => {
+                showSaveFeedback('Salvo com sucesso!');
+            });
+            
+            ipcRenderer.on('save-error', (event, errorMessage) => {
+                showSaveFeedback('Erro ao salvar: ' + errorMessage, true);
+            });
 
             // Salva automaticamente após cada modificação
             const observer = new MutationObserver((mutations) => {
-                // Ignora mudanças que afetam apenas classes
-                const hasNonClassChange = mutations.some(mutation => {
-                    return mutation.type !== 'attributes' || 
-                           (mutation.type === 'attributes' && mutation.attributeName !== 'class');
+                // Verifica se houve mudanças relevantes
+                const hasRelevantChanges = mutations.some(mutation => {
+                    // Log para debug
+                    console.log('Mutation:', {
+                        type: mutation.type,
+                        target: mutation.target,
+                        attributeName: mutation.attributeName
+                    });
+
+                    // Mudanças na estrutura (adição/remoção de nós)
+                    if (mutation.type === 'childList') {
+                        return true;
+                    }
+                    
+                    // Mudanças no conteúdo de texto
+                    if (mutation.type === 'characterData' || 
+                        (mutation.type === 'attributes' && mutation.target.nodeType === Node.TEXT_NODE)) {
+                        return true;
+                    }
+                    
+                    // Mudanças em atributos
+                    if (mutation.type === 'attributes') {
+                        // Ignora apenas mudanças de classe que não afetam o conteúdo
+                        if (mutation.attributeName === 'class') {
+                            const oldValue = mutation.oldValue;
+                            const newValue = mutation.target.getAttribute('class');
+                            // Se a mudança for apenas de collapsed/selected, ignora
+                            const relevantChange = !(
+                                (oldValue?.includes('collapsed') && newValue?.includes('collapsed')) ||
+                                (oldValue?.includes('selected') && newValue?.includes('selected'))
+                            );
+                            return relevantChange;
+                        }
+                        // Ignora contenteditable apenas se não houver outras mudanças
+                        if (mutation.attributeName === 'contenteditable') {
+                            return false;
+                        }
+                        return true;
+                    }
+                    return false;
                 });
 
-                if (hasNonClassChange) {
+                if (hasRelevantChanges) {
+                    console.log('Detectada mudança relevante, salvando mindmap...');
                     saveMindmap();
                 }
             });
@@ -766,8 +869,10 @@
                 childList: true,
                 subtree: true,
                 characterData: true,
+                characterDataOldValue: true,
                 attributes: true,
-                attributeFilter: ['class', 'contenteditable']
+                attributeOldValue: true,
+                attributeFilter: ['data-tags', 'data-link', 'class', 'contenteditable']
             });
 
             // Inicializa todos os nós com filhos como colapsados
@@ -932,7 +1037,8 @@
                 // Encontra todos os spans que contêm o texto
                 const spans = mindmap.querySelectorAll('li > span');
                 spans.forEach(span => {
-                    if (span.textContent.toLowerCase().includes(query.toLowerCase())) {
+                    const textSpan = span.querySelector('.node-text');
+                    if (textSpan && textSpan.textContent.toLowerCase().includes(query.toLowerCase())) {
                         searchMatches.push(span);
                         span.classList.add('search-match');
                     }
@@ -989,29 +1095,40 @@
 
             // Função para iniciar edição com diferentes modos
             function startEditing(span, mode = 'normal') {
-                span.contentEditable = true;
-                span.classList.add('editing');
+                let textSpan = span.querySelector('.node-text');
+                
+                // Se não existir o node-text, cria um novo
+                if (!textSpan) {
+                    textSpan = document.createElement('span');
+                    textSpan.className = 'node-text';
+                    textSpan.textContent = span.textContent;
+                    span.textContent = '';
+                    span.appendChild(textSpan);
+                }
+
+                textSpan.contentEditable = true;
+                textSpan.classList.add('editing');
                 // Guarda o texto original antes da edição
-                span.dataset.originalText = span.textContent;
-                span.focus();
+                textSpan.dataset.originalText = textSpan.textContent;
+                textSpan.focus();
 
                 const range = document.createRange();
                 const sel = window.getSelection();
 
                 switch(mode) {
                     case 'select-all': // c
-                        range.selectNodeContents(span);
+                        range.selectNodeContents(textSpan);
                         sel.removeAllRanges();
                         sel.addRange(range);
                         break;
                     case 'start': // i
-                        range.setStart(span, 0);
-                        range.setEnd(span, 0);
+                        range.setStart(textSpan, 0);
+                        range.setEnd(textSpan, 0);
                         sel.removeAllRanges();
                         sel.addRange(range);
                         break;
                     case 'end': // A ou e
-                        range.selectNodeContents(span);
+                        range.selectNodeContents(textSpan);
                         range.collapse(false);
                         sel.removeAllRanges();
                         sel.addRange(range);
@@ -1019,28 +1136,18 @@
                 }
             }
 
-            // Função para criar um novo nó
-            function createNewNode() {
-                const span = document.createElement('span');
-                span.contentEditable = true;
-                span.textContent = 'Novo item';
-                span.classList.add('editing');
-                
-                const li = document.createElement('li');
-                li.appendChild(span);
-                
-                return li;
-            }
-
             // Função para finalizar edição
             function finishEditing(span, shouldSave = true) {
-                span.classList.remove('editing');
-                span.contentEditable = false;
+                const textSpan = span.querySelector('.node-text') || span;
+                if (!textSpan) return;
+
+                textSpan.contentEditable = false;
+                textSpan.classList.remove('editing');
                 
                 if (!shouldSave) {
                     // Restaura o texto original se cancelou a edição
-                    span.textContent = span.dataset.originalText;
-                } else if (!span.textContent.trim()) {
+                    textSpan.textContent = textSpan.dataset.originalText;
+                } else if (!textSpan.textContent.trim()) {
                     // Remove o nó apenas se confirmou a edição e o texto está vazio
                     const li = span.closest('li');
                     const parentLi = li.parentElement.closest('li');
@@ -1054,7 +1161,7 @@
                 }
                 
                 // Limpa o texto original salvo
-                delete span.dataset.originalText;
+                delete textSpan.dataset.originalText;
             }
 
             // Função para adicionar um nó filho
@@ -1836,6 +1943,22 @@
                 setTimeout(() => {
                     document.addEventListener('click', closeOnClickOutside);
                 }, 100);
+            }
+
+            // Função para criar um novo nó
+            function createNewNode() {
+                const span = document.createElement('span');
+                const textSpan = document.createElement('span');
+                textSpan.className = 'node-text';
+                textSpan.textContent = 'Novo item';
+                textSpan.contentEditable = true;
+                textSpan.classList.add('editing');
+                span.appendChild(textSpan);
+                
+                const li = document.createElement('li');
+                li.appendChild(span);
+                
+                return li;
             }
         });
     </script>

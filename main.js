@@ -47,13 +47,18 @@ function saveMindmapToMarkdown(mindmapData) {
 // IPC handlers
 ipcMain.on('save-mindmap', (event, mindmapData) => {
     try {
-        saveMindmapToMarkdown(mindmapData)
-        event.reply('save-success')
+        console.log('Recebido pedido para salvar mindmap');
+        if (!mindmapData) {
+            throw new Error('Dados do mindmap vazios');
+        }
+        saveMindmapToMarkdown(mindmapData);
+        console.log('Mindmap salvo com sucesso');
+        event.reply('save-success');
     } catch (error) {
-        console.error('Erro ao salvar mindmap:', error)
-        event.reply('save-error', error.message)
+        console.error('Erro ao salvar mindmap:', error);
+        event.reply('save-error', error.message);
     }
-})
+});
 
 // Handler para abrir links externos
 ipcMain.on('open-external-link', (event, url) => {

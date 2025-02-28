@@ -100,38 +100,25 @@ function extractLinkFromText(text) {
     return { text };
 }
 
-function extractTagsFromText(text) {
-    const tagsRegex = /\{([^}]+)\}$/;
-    const match = text.match(tagsRegex);
-    if (match) {
-        const tags = match[1].split(',').map(tag => tag.trim());
-        return {
-            text: text.replace(tagsRegex, '').trim(),
-            tags
-        };
-    }
-    return { text };
-}
-
 function convertTokensToMindmap(tokens) {
     const root = { text: '', children: [] };
     const stack = [{ node: root, level: 0 }];
     let currentList = null;
+    let lastNode = null;
     
     tokens.forEach(token => {
         if (token.type === 'heading') {
             const level = token.depth;
             const text = token.text;
             
-            // Extrai link e tags do texto
-            const { text: textWithoutTags, tags } = extractTagsFromText(text);
-            const { text: cleanText, link } = extractLinkFromText(textWithoutTags);
+            // Extrai apenas o link do texto, já que as tags agora estão em uma linha separada
+            const { text: cleanText, link } = extractLinkFromText(text);
             
             const newNode = { 
                 text: cleanText, 
                 children: [],
                 link,
-                tags
+                tags: []
             };
             
             // Remove nós do stack que têm nível maior ou igual
@@ -143,24 +130,41 @@ function convertTokensToMindmap(tokens) {
             parent.children.push(newNode);
             stack.push({ node: newNode, level });
             currentList = null;
+            lastNode = newNode;
+            
+        } else if (token.type === 'paragraph' && token.text.startsWith('tags:') && lastNode) {
+            // Processa linha de tags
+            const tagsText = token.text.replace('tags:', '').trim();
+            lastNode.tags = tagsText.split(',').map(tag => tag.trim());
             
         } else if (token.type === 'list') {
             currentList = token;
             const level = (stack[stack.length - 1].level || 0) + 1;
             
             token.items.forEach(item => {
-                const { text: textWithoutTags, tags } = extractTagsFromText(item.text);
-                const { text: cleanText, link } = extractLinkFromText(textWithoutTags);
+                // Processa o texto principal do item
+                const { text: cleanText, link } = extractLinkFromText(item.text);
                 
                 const newNode = {
                     text: cleanText,
                     children: [],
                     link,
-                    tags
+                    tags: []
                 };
                 
                 const parent = stack[stack.length - 1].node;
                 parent.children.push(newNode);
+                lastNode = newNode;
+                
+                // Processa os tokens do item para encontrar as tags
+                if (item.tokens) {
+                    item.tokens.forEach(subToken => {
+                        if (subToken.type === 'text' && subToken.text.startsWith('tags:')) {
+                            const tagsText = subToken.text.replace('tags:', '').trim();
+                            newNode.tags = tagsText.split(',').map(tag => tag.trim());
+                        }
+                    });
+                }
                 
                 // Se o item tem subitens, processa recursivamente
                 if (item.tokens && item.tokens.length > 0) {
@@ -192,10 +196,11 @@ function generateHTML(nodes) {
     nodes.forEach(node => {
         html += '<li>';
         const spanAttrs = [];
+        const spanClasses = [];
         
         if (node.link) {
             spanAttrs.push(`data-link="${node.link}"`);
-            spanAttrs.push('class="has-link"');
+            spanClasses.push('has-link');
         }
         
         if (node.tags && node.tags.length > 0) {
@@ -203,11 +208,20 @@ function generateHTML(nodes) {
         }
         
         if (node.children && node.children.length > 0) {
-            spanAttrs.push('class="has-children"');
+            spanClasses.push('has-children');
+        }
+
+        if (spanClasses.length > 0) {
+            spanAttrs.push(`class="${spanClasses.join(' ')}"`);
         }
         
-        html += `<span ${spanAttrs.join(' ')}>${node.text}`;
+        // Cria um span principal que contém tanto o texto quanto as tags
+        html += `<span ${spanAttrs.join(' ')}>`;
         
+        // Adiciona um span específico para o texto do nó
+        html += `<span class="node-text">${node.text}</span>`;
+        
+        // Adiciona as tags em um span separado
         if (node.tags && node.tags.length > 0) {
             html += `<span class="tags">${node.tags.map(tag => 
                 `<span class="tag">${tag}</span>`).join('')}</span>`;
