@@ -1,8 +1,8 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
+const { app, BrowserWindow, ipcMain, shell } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const os = require('os')
-const { shell } = require('electron')
+const { updateMarkdownMetadata } = require('./src/markdown-parser')
 
 let mainWindow = null
 
@@ -60,4 +60,9 @@ ipcMain.on('open-external-link', (event, url) => {
     shell.openExternal(url).catch(error => {
         console.error('Erro ao abrir link:', error)
     })
+})
+
+ipcMain.handle('update-markdown-metadata', async (event, newTags) => {
+    const filePath = path.join(os.homedir(), 'lifemap.md')
+    return updateMarkdownMetadata(filePath, newTags)
 }) 

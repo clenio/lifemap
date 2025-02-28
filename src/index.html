@@ -107,7 +107,9 @@
         .mindmap li > span {
             display: inline-block;
             padding: 0.2em;
-            white-space: nowrap;
+            max-width: 500px;
+            white-space: normal;
+            word-wrap: break-word;
             position: relative;
             z-index: 1;
             color: inherit;
@@ -308,6 +310,215 @@
         .link-modal button:hover {
             opacity: 0.9;
         }
+
+        /* Command Palette */
+        .command-palette {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2c3e50;
+            padding: 1em;
+            border-radius: 5px;
+            border: 1px solid #3498db;
+            display: none;
+            z-index: 1000;
+            min-width: 400px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .command-palette.active {
+            display: block;
+        }
+
+        .command-palette input {
+            width: 100%;
+            background-color: #34495e;
+            border: 1px solid #3498db;
+            color: white;
+            padding: 0.5em;
+            border-radius: 3px;
+            margin-bottom: 0.5em;
+            font-family: inherit;
+        }
+
+        .command-palette .commands {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .command-palette .command-item {
+            padding: 0.5em;
+            cursor: pointer;
+            border-radius: 3px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        .command-palette .command-item.selected {
+            background-color: #3498db;
+        }
+
+        .command-palette .command-item:hover {
+            background-color: #2980b9;
+        }
+
+        .command-palette .command-item .icon {
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+
+        .command-palette .command-item .description {
+            color: #95a5a6;
+            margin-left: auto;
+            font-size: 0.9em;
+        }
+
+        /* Estilos para as tags */
+        .mindmap li > span .tags {
+            display: inline-flex;
+            gap: 0.3em;
+            margin-left: 0.5em;
+            font-size: 0.8em;
+        }
+
+        .mindmap li > span .tag {
+            background-color: #3498db;
+            color: white;
+            padding: 0.1em 0.4em;
+            border-radius: 3px;
+            opacity: 0.8;
+        }
+
+        /* Modal de Tags */
+        .tags-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #2c3e50;
+            padding: 1em;
+            border-radius: 5px;
+            border: 1px solid #3498db;
+            display: none;
+            z-index: 1000;
+            min-width: 300px;
+        }
+
+        .tags-modal.active {
+            display: block;
+        }
+
+        .tags-modal .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        .tags-modal .tag {
+            background-color: #3498db;
+            color: white;
+            padding: 0.2em 0.6em;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            gap: 0.3em;
+        }
+
+        .tags-modal .tag .remove {
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .tags-modal .tag .remove:hover {
+            opacity: 1;
+        }
+
+        .tags-modal input {
+            width: 100%;
+            background-color: #34495e;
+            border: 1px solid #3498db;
+            color: white;
+            padding: 0.5em;
+            border-radius: 3px;
+            margin-bottom: 1em;
+            font-family: inherit;
+        }
+
+        .tags-modal .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5em;
+        }
+
+        .tags-modal button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5em 1em;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .tags-modal button.cancel {
+            background-color: #95a5a6;
+        }
+
+        .tags-modal button:hover {
+            opacity: 0.9;
+        }
+
+        .tags-modal .error {
+            color: #e74c3c;
+            margin-bottom: 1em;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .tags-modal .suggestions {
+            background-color: #34495e;
+            border: 1px solid #3498db;
+            border-radius: 3px;
+            margin-top: -1em;
+            margin-bottom: 1em;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .tags-modal .suggestion {
+            padding: 0.5em;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .tags-modal .suggestion:hover,
+        .tags-modal .suggestion.selected {
+            background-color: #3498db;
+        }
+
+        .tags-modal .suggestions::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .tags-modal .suggestions::-webkit-scrollbar-track {
+            background: #2c3e50;
+        }
+
+        .tags-modal .suggestions::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 3px;
+        }
+
+        /* Atualiza o CSS para tags selecionadas */
+        .tags-modal .tag.selected {
+            background-color: #2980b9;
+            outline: 2px solid #3498db;
+        }
     </style>
 </head>
 <body>
@@ -322,12 +533,18 @@
         <input type="text" placeholder="Buscar..." />
         <div class="results"></div>
     </div>
+    <div class="command-palette">
+        <input type="text" placeholder="Digite um comando..." />
+        <div class="commands"></div>
+    </div>
     <div class="help">
         Navegação: 
         <kbd>h</kbd> esquerda 
         <kbd>j</kbd> baixo 
         <kbd>k</kbd> cima 
         <kbd>l</kbd> direita
+        <kbd>⇧</kbd>+<kbd>j</kbd> mover baixo
+        <kbd>⇧</kbd>+<kbd>k</kbd> mover cima
         <kbd>space</kbd> expandir/colapsar
         <kbd>/</kbd> buscar
         <kbd>n</kbd> próximo
@@ -351,6 +568,15 @@
             <button class="save">Salvar</button>
         </div>
     </div>
+    <div class="tags-modal">
+        <div class="tags-container"></div>
+        <input type="text" placeholder="Adicionar nova tag..." />
+        <div class="buttons">
+            <button class="cancel">Cancelar</button>
+            <button class="save">Salvar</button>
+        </div>
+        <div class="error"></div>
+    </div>
     <script>
         const { ipcRenderer } = require('electron');
         const { loadMindmapFromMarkdown } = require('./markdown-parser');
@@ -365,15 +591,151 @@
             const linkInput = linkModal.querySelector('input');
             const linkSaveButton = linkModal.querySelector('.save');
             const linkCancelButton = linkModal.querySelector('.cancel');
+            const commandPalette = document.querySelector('.command-palette');
+            const commandInput = commandPalette.querySelector('input');
+            const commandsList = commandPalette.querySelector('.commands');
+            const tagsModal = document.querySelector('.tags-modal');
+            const tagsContainer = tagsModal.querySelector('.tags-container');
+            const tagsInput = tagsModal.querySelector('input');
+            const tagsSaveButton = tagsModal.querySelector('.save');
+            const tagsCancelButton = tagsModal.querySelector('.cancel');
+            const tagsError = tagsModal.querySelector('.error');
             let currentSelected = null;
             let searchMatches = [];
             let currentMatchIndex = -1;
             let copiedNode = null;
+            let selectedCommandIndex = -1;
+            let currentTags = [];
+            let availableTags = [];
             
+            // Lista de comandos disponíveis
+            const commands = [
+                {
+                    id: 'collapse-all',
+                    title: 'Colapsar Todos os Nós',
+                    description: 'Fecha todos os nós do mindmap',
+                    icon: '[-]',
+                    execute: () => {
+                        const allNodes = mindmap.querySelectorAll('li:has(> div > ul)');
+                        allNodes.forEach(node => {
+                            node.classList.add('collapsed');
+                        });
+                    }
+                },
+                {
+                    id: 'expand-all',
+                    title: 'Expandir Todos os Nós',
+                    description: 'Abre todos os nós do mindmap',
+                    icon: '[+]',
+                    execute: () => {
+                        const allNodes = mindmap.querySelectorAll('li:has(> div > ul)');
+                        allNodes.forEach(node => {
+                            node.classList.remove('collapsed');
+                        });
+                    }
+                },
+                {
+                    id: 'show-tags-summary',
+                    title: 'Mostrar Resumo por Tags',
+                    description: 'Exibe um resumo dos nós agrupados por tag',
+                    icon: '@',
+                    execute: () => {
+                        showTagsSummary();
+                    }
+                }
+            ];
+
+            // Função para mostrar o command palette
+            function showCommandPalette() {
+                commandPalette.classList.add('active');
+                commandInput.value = '';
+                commandInput.focus();
+                filterCommands('');
+            }
+
+            // Função para esconder o command palette
+            function hideCommandPalette() {
+                commandPalette.classList.remove('active');
+                commandInput.value = '';
+                selectedCommandIndex = -1;
+            }
+
+            // Função para filtrar e mostrar comandos
+            function filterCommands(query) {
+                const filteredCommands = commands.filter(cmd => 
+                    cmd.title.toLowerCase().includes(query.toLowerCase()));
+                
+                commandsList.innerHTML = filteredCommands.map((cmd, index) => `
+                    <div class="command-item${index === selectedCommandIndex ? ' selected' : ''}" data-index="${index}">
+                        <span class="icon">${cmd.icon}</span>
+                        <span class="title">${cmd.title}</span>
+                        <span class="description">${cmd.description}</span>
+                    </div>
+                `).join('');
+
+                // Atualiza o índice selecionado se necessário
+                if (selectedCommandIndex >= filteredCommands.length) {
+                    selectedCommandIndex = filteredCommands.length - 1;
+                }
+            }
+
+            // Função para executar o comando selecionado
+            function executeSelectedCommand() {
+                const filteredCommands = commands.filter(cmd => 
+                    cmd.title.toLowerCase().includes(commandInput.value.toLowerCase()));
+                
+                if (selectedCommandIndex >= 0 && selectedCommandIndex < filteredCommands.length) {
+                    const command = filteredCommands[selectedCommandIndex];
+                    command.execute();
+                    hideCommandPalette();
+                }
+            }
+
+            // Event listener para o input do command palette
+            commandInput.addEventListener('input', (e) => {
+                filterCommands(e.target.value);
+            });
+
+            // Event listener para teclas no command palette
+            commandInput.addEventListener('keydown', (e) => {
+                const filteredCommands = commands.filter(cmd => 
+                    cmd.title.toLowerCase().includes(commandInput.value.toLowerCase()));
+
+                switch(e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        selectedCommandIndex = Math.min(selectedCommandIndex + 1, filteredCommands.length - 1);
+                        filterCommands(commandInput.value);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        selectedCommandIndex = Math.max(selectedCommandIndex - 1, 0);
+                        filterCommands(commandInput.value);
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        executeSelectedCommand();
+                        break;
+                    case 'Escape':
+                        e.preventDefault();
+                        hideCommandPalette();
+                        break;
+                }
+            });
+
+            // Adiciona o handler para a tecla ':'
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ':' && !commandPalette.classList.contains('active')) {
+                    e.preventDefault();
+                    showCommandPalette();
+                }
+            });
+
             // Carrega o conteúdo inicial do arquivo markdown
             const mindmapContent = loadMindmapFromMarkdown();
             if (mindmapContent) {
-                mindmap.innerHTML = mindmapContent;
+                mindmap.innerHTML = mindmapContent.html;
+                availableTags = mindmapContent.availableTags;
                 // Seleciona o primeiro nó após carregar o conteúdo
                 currentSelected = mindmap.querySelector('li > span:first-of-type');
                 if (currentSelected) {
@@ -814,6 +1176,20 @@
                 }
             }
 
+            // Função para mover um nó para cima ou para baixo
+            function moveNode(node, direction) {
+                const li = node.closest('li');
+                const siblingNode = direction === 'up' ? li.previousElementSibling : li.nextElementSibling;
+                
+                if (siblingNode) {
+                    if (direction === 'up') {
+                        siblingNode.before(li);
+                    } else {
+                        siblingNode.after(li);
+                    }
+                }
+            }
+
             // Event listeners para o modal de link
             linkSaveButton.addEventListener('click', saveLink);
             linkCancelButton.addEventListener('click', hideLinkModal);
@@ -824,6 +1200,282 @@
                     hideLinkModal();
                 }
             });
+
+            // Função para mostrar o modal de tags
+            function showTagsModal() {
+                tagsModal.classList.add('active');
+                tagsInput.value = '';
+                
+                // Carrega as tags existentes do nó atual
+                currentTags = JSON.parse(currentSelected.dataset.tags || '[]');
+                renderTags();
+                
+                // Cria ou obtém o container de sugestões
+                let suggestionsContainer = tagsModal.querySelector('.suggestions');
+                if (!suggestionsContainer) {
+                    suggestionsContainer = document.createElement('div');
+                    suggestionsContainer.className = 'suggestions';
+                    tagsInput.parentNode.insertBefore(suggestionsContainer, tagsInput.nextSibling);
+                }
+                
+                // Mostra todas as tags disponíveis do arquivo markdown
+                showTagSuggestions('');
+                
+                // Foca no input após mostrar as sugestões
+                tagsInput.focus();
+            }
+
+            // Função para esconder o modal de tags
+            function hideTagsModal() {
+                tagsModal.classList.remove('active');
+                tagsInput.value = '';
+                currentTags = [];
+                tagsError.style.display = 'none';
+            }
+
+            // Função para renderizar as tags no modal
+            function renderTags() {
+                tagsContainer.innerHTML = currentTags.map(tag => `
+                    <div class="tag">
+                        ${tag}
+                        <span class="remove" data-tag="${tag}">&times;</span>
+                    </div>
+                `).join('');
+
+                // Adiciona event listeners para os botões de remover
+                tagsContainer.querySelectorAll('.remove').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const tag = e.target.dataset.tag;
+                        removeTag(tag);
+                    });
+                });
+
+                // Atualiza as tags no nó selecionado
+                updateNodeTags();
+            }
+
+            // Função para remover uma tag
+            function removeTag(tag) {
+                currentTags = currentTags.filter(t => t !== tag);
+                renderTags();
+                
+                // Coleta todas as tags atualmente em uso no mindmap
+                const allUsedTags = new Set();
+                mindmap.querySelectorAll('li > span').forEach(span => {
+                    const nodeTags = JSON.parse(span.dataset.tags || '[]');
+                    nodeTags.forEach(tag => allUsedTags.add(tag));
+                });
+                
+                // Atualiza os metadados do markdown com todas as tags disponíveis
+                ipcRenderer.invoke('update-markdown-metadata', Array.from(allUsedTags))
+                    .then(updatedTags => {
+                        availableTags = updatedTags;
+                        showTagSuggestions('');
+                    });
+            }
+
+            // Função para atualizar as tags no nó
+            function updateNodeTags() {
+                // Atualiza o dataset
+                currentSelected.dataset.tags = JSON.stringify(currentTags);
+                
+                // Atualiza a visualização das tags
+                let tagsSpan = currentSelected.querySelector('.tags');
+                if (!tagsSpan) {
+                    tagsSpan = document.createElement('span');
+                    tagsSpan.className = 'tags';
+                    currentSelected.appendChild(tagsSpan);
+                }
+                
+                tagsSpan.innerHTML = currentTags.map(tag => `
+                    <span class="tag">${tag}</span>
+                `).join('');
+                
+                // Remove o container de tags se não houver tags
+                if (currentTags.length === 0 && tagsSpan) {
+                    tagsSpan.remove();
+                }
+            }
+
+            // Event listeners para o modal de tags
+            tagsInput.addEventListener('input', function(e) {
+                showTagSuggestions(e.target.value.trim());
+            });
+
+            // Função para mostrar sugestões de tags
+            function showTagSuggestions(query) {
+                const suggestionsContainer = tagsModal.querySelector('.suggestions');
+                if (!suggestionsContainer) return;
+                
+                // Filtra as tags disponíveis do arquivo markdown
+                const suggestions = availableTags
+                    .filter(tag => !currentTags.includes(tag))
+                    .filter(tag => query ? tag.toLowerCase().includes(query.toLowerCase()) : true)
+                    .slice(0, 10);
+                
+                // Remove a seleção anterior
+                const previousSelected = suggestionsContainer.querySelector('.suggestion.selected');
+                if (previousSelected) {
+                    previousSelected.classList.remove('selected');
+                }
+                
+                suggestionsContainer.innerHTML = suggestions
+                    .map(tag => `<div class="suggestion">${tag}</div>`)
+                    .join('');
+                
+                // Mostra o container se houver sugestões ou se houver texto digitado
+                suggestionsContainer.style.display = (suggestions.length > 0 || query) ? 'block' : 'none';
+                
+                // Adiciona eventos de clique nas sugestões
+                suggestionsContainer.querySelectorAll('.suggestion').forEach(el => {
+                    el.addEventListener('click', () => {
+                        addTag(el.textContent);
+                        tagsInput.value = '';
+                        suggestionsContainer.style.display = 'none';
+                    });
+                });
+                
+                // Seleciona a primeira sugestão se houver texto digitado
+                if (query && suggestions.length > 0) {
+                    suggestionsContainer.querySelector('.suggestion').classList.add('selected');
+                }
+            }
+
+            // Função para adicionar uma nova tag
+            function addTag(tag) {
+                tag = tag.trim();
+                if (!tag) return;
+                
+                // Verifica se já atingiu o limite de 3 tags
+                if (currentTags.length >= 3) {
+                    tagsError.textContent = 'Limite máximo de 3 tags atingido';
+                    tagsError.style.display = 'block';
+                    return;
+                }
+                
+                // Verifica se a tag já existe
+                if (currentTags.includes(tag)) {
+                    tagsError.textContent = 'Esta tag já existe';
+                    tagsError.style.display = 'block';
+                    return;
+                }
+                
+                currentTags.push(tag);
+                tagsInput.value = '';
+                tagsError.style.display = 'none';
+                
+                // Coleta todas as tags atualmente em uso no mindmap
+                const allUsedTags = new Set();
+                mindmap.querySelectorAll('li > span').forEach(span => {
+                    const nodeTags = JSON.parse(span.dataset.tags || '[]');
+                    nodeTags.forEach(tag => allUsedTags.add(tag));
+                });
+                // Adiciona a nova tag
+                allUsedTags.add(tag);
+                
+                // Atualiza os metadados do markdown com todas as tags disponíveis
+                ipcRenderer.invoke('update-markdown-metadata', Array.from(allUsedTags))
+                    .then(updatedTags => {
+                        availableTags = updatedTags;
+                        renderTags();
+                        // Mostra todas as tags disponíveis novamente
+                        showTagSuggestions('');
+                    });
+            }
+
+            // Função para navegar entre as tags do nó atual
+            function navigateCurrentTags(direction) {
+                const tags = tagsContainer.querySelectorAll('.tag');
+                if (!tags.length) return;
+
+                // Remove seleção anterior
+                const currentSelected = tagsContainer.querySelector('.tag.selected');
+                let nextIndex = 0;
+
+                if (currentSelected) {
+                    currentSelected.classList.remove('selected');
+                    const currentIndex = Array.from(tags).indexOf(currentSelected);
+                    nextIndex = direction === 'right' ? 
+                        (currentIndex + 1) % tags.length : 
+                        (currentIndex - 1 + tags.length) % tags.length;
+                }
+
+                // Seleciona a próxima tag
+                tags[nextIndex].classList.add('selected');
+            }
+
+            // Event listeners para o modal de tags
+            tagsInput.addEventListener('keydown', function(e) {
+                const suggestionsContainer = tagsModal.querySelector('.suggestions');
+                const suggestions = suggestionsContainer?.querySelectorAll('.suggestion');
+                
+                // Se o input estiver vazio, permite navegação nas tags existentes
+                if (!this.value.trim()) {
+                    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        navigateCurrentTags(e.key === 'ArrowRight' ? 'right' : 'left');
+                        return;
+                    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                        e.preventDefault();
+                        const selectedTag = tagsContainer.querySelector('.tag.selected');
+                        if (selectedTag) {
+                            const tagText = selectedTag.firstChild.textContent.trim();
+                            removeTag(tagText);
+                            // Seleciona a próxima tag disponível
+                            const remainingTags = tagsContainer.querySelectorAll('.tag');
+                            if (remainingTags.length > 0) {
+                                remainingTags[0].classList.add('selected');
+                            }
+                        }
+                        return;
+                    }
+                }
+
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    // Se houver uma sugestão selecionada, usa ela
+                    const selectedSuggestion = suggestionsContainer?.querySelector('.suggestion.selected');
+                    if (selectedSuggestion) {
+                        addTag(selectedSuggestion.textContent);
+                    } else if (this.value.trim()) {
+                        addTag(this.value);
+                    }
+                    this.value = '';
+                    showTagSuggestions('');
+                } else if (e.key === 'Escape') {
+                    hideTagsModal();
+                } else if (e.key === 'ArrowDown' && suggestions?.length) {
+                    e.preventDefault();
+                    const current = suggestionsContainer.querySelector('.selected');
+                    if (current) {
+                        current.classList.remove('selected');
+                        const next = current.nextElementSibling || suggestions[0];
+                        next.classList.add('selected');
+                    } else {
+                        suggestions[0].classList.add('selected');
+                    }
+                } else if (e.key === 'ArrowUp' && suggestions?.length) {
+                    e.preventDefault();
+                    const current = suggestionsContainer.querySelector('.selected');
+                    if (current) {
+                        current.classList.remove('selected');
+                        const prev = current.previousElementSibling || suggestions[suggestions.length - 1];
+                        prev.classList.add('selected');
+                    } else {
+                        suggestions[suggestions.length - 1].classList.add('selected');
+                    }
+                }
+            });
+
+            // Atualiza o CSS para tags selecionadas
+            const style = document.createElement('style');
+            style.textContent = `
+                .tags-modal .tag.selected {
+                    background-color: #2980b9;
+                    outline: 2px solid #3498db;
+                }
+            `;
+            document.head.appendChild(style);
 
             // Handler de teclado atualizado
             document.addEventListener('keydown', function(e) {
@@ -837,6 +1489,34 @@
                         case 'Escape':
                             e.preventDefault();
                             finishEditing(document.activeElement, false);
+                            break;
+                    }
+                    return;
+                }
+
+                // Se o command palette está ativo, trata apenas seus comandos específicos
+                if (commandPalette.classList.contains('active')) {
+                    switch(e.key) {
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            selectedCommandIndex = Math.min(selectedCommandIndex + 1, commands.length - 1);
+                            filterCommands(commandInput.value);
+                            break;
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            selectedCommandIndex = Math.max(selectedCommandIndex - 1, 0);
+                            filterCommands(commandInput.value);
+                            break;
+                        case 'Enter':
+                            e.preventDefault();
+                            executeSelectedCommand();
+                            break;
+                        case 'Escape':
+                            e.preventDefault();
+                            hideCommandPalette();
+                            break;
+                        case 'Tab':
+                            e.preventDefault();
                             break;
                     }
                     return;
@@ -890,12 +1570,21 @@
                     return;
                 }
 
+                // Se o modal de tags está ativo
+                if (tagsModal.classList.contains('active')) {
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        return;
+                    }
+                    return;
+                }
+
                 let nextElement = null;
 
-                // Primeiro, trata os atalhos com modificadores (Ctrl, Cmd, Shift)
-                if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
+                // Atalhos globais
+                if (e.key === ':' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
                     e.preventDefault();
-                    showLinkModal();
+                    showCommandPalette();
                     return;
                 }
 
@@ -965,10 +1654,18 @@
                         nextElement = findNextNavigableElement('left', currentSelected);
                         break;
                     case 'j':
-                        nextElement = findNextNavigableElement('down', currentSelected);
+                        if (e.shiftKey) {
+                            e.preventDefault();
+                            moveNode(currentSelected, 'down');
+                        } else {
+                            nextElement = findNextNavigableElement('down', currentSelected);
+                        }
                         break;
                     case 'k':
-                        if (!e.metaKey && !e.ctrlKey) { // Garante que é apenas o 'k' sem modificadores
+                        if (e.shiftKey) {
+                            e.preventDefault();
+                            moveNode(currentSelected, 'up');
+                        } else if (!e.metaKey && !e.ctrlKey) {
                             nextElement = findNextNavigableElement('up', currentSelected);
                         }
                         break;
@@ -1005,6 +1702,10 @@
                         e.preventDefault();
                         focusNode(currentSelected);
                         break;
+                    case 't':
+                        e.preventDefault();
+                        showTagsModal();
+                        break;
                 }
 
                 if (nextElement) {
@@ -1029,6 +1730,113 @@
                     toggleNode(e.target);
                 }
             });
+
+            // Função para coletar nós por tag
+            function collectNodesByTag() {
+                const nodesByTag = new Map();
+                const spans = mindmap.querySelectorAll('li > span');
+                
+                spans.forEach(span => {
+                    const tags = JSON.parse(span.dataset.tags || '[]');
+                    const text = span.childNodes[0].textContent.trim();
+                    
+                    tags.forEach(tag => {
+                        if (!nodesByTag.has(tag)) {
+                            nodesByTag.set(tag, []);
+                        }
+                        nodesByTag.get(tag).push(text);
+                    });
+                });
+                
+                return nodesByTag;
+            }
+
+            // Função para mostrar o resumo por tags
+            function showTagsSummary() {
+                const nodesByTag = collectNodesByTag();
+                let summary = '';
+                
+                // Ordena as tags alfabeticamente
+                const sortedTags = Array.from(nodesByTag.keys()).sort();
+                
+                sortedTags.forEach(tag => {
+                    const nodes = nodesByTag.get(tag);
+                    summary += `@${tag}\n`;
+                    nodes.forEach(node => {
+                        summary += `- ${node}\n`;
+                    });
+                    summary += '\n';
+                });
+                
+                // Cria ou atualiza o modal de resumo
+                let summaryModal = document.querySelector('.summary-modal');
+                if (!summaryModal) {
+                    summaryModal = document.createElement('div');
+                    summaryModal.className = 'summary-modal';
+                    document.body.appendChild(summaryModal);
+                    
+                    // Adiciona estilos para o modal
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .summary-modal {
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            background-color: #2c3e50;
+                            padding: 1em;
+                            border-radius: 5px;
+                            border: 1px solid #3498db;
+                            display: none;
+                            z-index: 1000;
+                            min-width: 400px;
+                            max-width: 80%;
+                            max-height: 80vh;
+                            overflow-y: auto;
+                            font-family: monospace;
+                            white-space: pre-wrap;
+                            color: #fff;
+                        }
+                        .summary-modal.active {
+                            display: block;
+                        }
+                        .summary-modal::-webkit-scrollbar {
+                            width: 6px;
+                        }
+                        .summary-modal::-webkit-scrollbar-track {
+                            background: #2c3e50;
+                        }
+                        .summary-modal::-webkit-scrollbar-thumb {
+                            background: #3498db;
+                            border-radius: 3px;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                summaryModal.textContent = summary;
+                summaryModal.classList.add('active');
+                
+                // Fecha o modal ao pressionar ESC
+                const closeOnEsc = (e) => {
+                    if (e.key === 'Escape') {
+                        summaryModal.classList.remove('active');
+                        document.removeEventListener('keydown', closeOnEsc);
+                    }
+                };
+                document.addEventListener('keydown', closeOnEsc);
+                
+                // Fecha o modal ao clicar fora dele
+                const closeOnClickOutside = (e) => {
+                    if (!summaryModal.contains(e.target)) {
+                        summaryModal.classList.remove('active');
+                        document.removeEventListener('click', closeOnClickOutside);
+                    }
+                };
+                setTimeout(() => {
+                    document.addEventListener('click', closeOnClickOutside);
+                }, 100);
+            }
         });
     </script>
 </body>
