@@ -114,7 +114,7 @@
             z-index: 1;
             color: inherit;
             cursor: pointer;
-            opacity: 0.5;
+            opacity: 0.4;
             transition: opacity 0.3s ease;
         }
 
@@ -600,6 +600,8 @@
         <kbd>?</kbd> ajuda
         <kbd>⌘/ctrl</kbd>+<kbd>k</kbd> adicionar link
         <kbd>⇧</kbd>+<kbd>u</kbd> abrir link
+        <kbd>1</kbd>-<kbd>4</kbd> expandir níveis
+        <kbd>0</kbd> expandir tudo
     </div>
     <div class="link-modal">
         <input type="text" placeholder="Cole o link aqui..." />
@@ -676,12 +678,48 @@
                     }
                 },
                 {
+                    id: 'expand-level-1',
+                    title: 'Expandir Nível 1',
+                    description: 'Expande apenas o primeiro nível',
+                    icon: '1️⃣',
+                    execute: () => {
+                        expandToLevel(1);
+                    }
+                },
+                {
+                    id: 'expand-level-2',
+                    title: 'Expandir Nível 2',
+                    description: 'Expande até o segundo nível',
+                    icon: '2️⃣',
+                    execute: () => {
+                        expandToLevel(2);
+                    }
+                },
+                {
+                    id: 'expand-level-3',
+                    title: 'Expandir Nível 3',
+                    description: 'Expande até o terceiro nível',
+                    icon: '3️⃣',
+                    execute: () => {
+                        expandToLevel(3);
+                    }
+                },
+                {
                     id: 'show-tags-summary',
                     title: 'Mostrar Resumo por Tags',
                     description: 'Exibe um resumo dos nós agrupados por tag',
                     icon: '@',
                     execute: () => {
                         showTagsSummary();
+                    }
+                },
+                {
+                    id: 'save-mindmap',
+                    title: 'Salvar Mindmap',
+                    description: 'Salva o mindmap imediatamente',
+                    icon: '💾',
+                    execute: () => {
+                        forceSaveMindmap();
                     }
                 }
             ];
@@ -787,6 +825,10 @@
             // Elementos do feedback de salvamento
             const saveFeedback = document.querySelector('.save-feedback');
             
+            // Variável para controlar o debounce do salvamento
+            let saveTimeout = null;
+            const SAVE_DELAY = 2000; // 2 segundos de inatividade antes de salvar
+            
             // Função para mostrar feedback
             function showSaveFeedback(message, isError = false) {
                 saveFeedback.textContent = message;
@@ -799,8 +841,31 @@
                 }, 2000);
             }
             
-            // Função para salvar o mindmap atualizada
+            // Função para salvar o mindmap com debounce
             function saveMindmap() {
+                // Cancela qualquer salvamento pendente
+                if (saveTimeout) {
+                    clearTimeout(saveTimeout);
+                }
+                
+                // Agenda um novo salvamento após o período de inatividade
+                saveTimeout = setTimeout(() => {
+                    const markdown = convertMindmapToMarkdown(mindmap);
+                    ipcRenderer.send('save-mindmap', markdown);
+                    showSaveFeedback('Salvando...');
+                    saveTimeout = null;
+                }, SAVE_DELAY);
+            }
+            
+            // Função para forçar o salvamento imediato (sem debounce)
+            function forceSaveMindmap() {
+                // Cancela qualquer salvamento pendente
+                if (saveTimeout) {
+                    clearTimeout(saveTimeout);
+                    saveTimeout = null;
+                }
+                
+                // Salva imediatamente
                 const markdown = convertMindmapToMarkdown(mindmap);
                 ipcRenderer.send('save-mindmap', markdown);
                 showSaveFeedback('Salvando...');
@@ -860,8 +925,8 @@
                 });
 
                 if (hasRelevantChanges) {
-                    console.log('Detectada mudança relevante, salvando mindmap...');
-                    saveMindmap();
+                    console.log('Detectada mudança relevante, agendando salvamento...');
+                    saveMindmap(); // Usa o salvamento com debounce
                 }
             });
 
@@ -1112,6 +1177,24 @@
                 textSpan.dataset.originalText = textSpan.textContent;
                 textSpan.focus();
 
+                // Adiciona um handler específico para o elemento em edição
+                textSpan.addEventListener('keydown', function editingKeyHandler(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        finishEditing(span, true);
+                        // Remove o handler após finalizar a edição
+                        textSpan.removeEventListener('keydown', editingKeyHandler);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        finishEditing(span, false);
+                        // Remove o handler após finalizar a edição
+                        textSpan.removeEventListener('keydown', editingKeyHandler);
+                    } else {
+                        // Para todas as outras teclas, permite o comportamento padrão
+                        e.stopPropagation(); // Impede que o evento chegue ao handler global
+                    }
+                });
+
                 const range = document.createRange();
                 const sel = window.getSelection();
 
@@ -1190,14 +1273,11 @@
                 currentSelected.classList.remove('selected');
                 newSpan.classList.add('selected');
                 currentSelected = newSpan;
-                newSpan.focus();
                 
-                // Seleciona todo o texto para fácil edição
-                const range = document.createRange();
-                range.selectNodeContents(newSpan);
-                const sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
+                // Inicia a edição do novo nó
+                const textSpan = newSpan.querySelector('.node-text');
+                textSpan.focus();
+                startEditing(newSpan, 'select-all');
             }
 
             // Função para adicionar um nó irmão (acima ou abaixo)
@@ -1216,14 +1296,11 @@
                 currentSelected.classList.remove('selected');
                 newSpan.classList.add('selected');
                 currentSelected = newSpan;
-                newSpan.focus();
                 
-                // Seleciona todo o texto para fácil edição
-                const range = document.createRange();
-                range.selectNodeContents(newSpan);
-                const sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
+                // Inicia a edição do novo nó
+                const textSpan = newSpan.querySelector('.node-text');
+                textSpan.focus();
+                startEditing(newSpan, 'select-all');
             }
 
             // Função para colapsar todos os nós exceto o caminho até o nó selecionado
@@ -1586,21 +1663,6 @@
 
             // Handler de teclado atualizado
             document.addEventListener('keydown', function(e) {
-                // Se estiver editando um nó
-                if (document.activeElement.tagName === 'SPAN' && document.activeElement.contentEditable === 'true') {
-                    switch(e.key) {
-                        case 'Enter':
-                            e.preventDefault();
-                            finishEditing(document.activeElement, true);
-                            break;
-                        case 'Escape':
-                            e.preventDefault();
-                            finishEditing(document.activeElement, false);
-                            break;
-                    }
-                    return;
-                }
-
                 // Se o command palette está ativo, trata apenas seus comandos específicos
                 if (commandPalette.classList.contains('active')) {
                     switch(e.key) {
@@ -1692,6 +1754,33 @@
                 if (e.key === ':' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
                     e.preventDefault();
                     showCommandPalette();
+                    return;
+                }
+
+                // Atalho para salvar (Ctrl+S ou Cmd+S)
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                    e.preventDefault();
+                    forceSaveMindmap();
+                    return;
+                }
+
+                // Atalho para adicionar link (Ctrl+K ou Cmd+K)
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    showLinkModal();
+                    return;
+                }
+
+                // Atalhos numéricos para expandir níveis
+                if (!isNaN(parseInt(e.key)) && e.key >= '0' && e.key <= '9') {
+                    const level = parseInt(e.key);
+                    if (level === 0) {
+                        // 0 expande todos os níveis
+                        expandToLevel(4);
+                    } else {
+                        // 1-4 expande até o nível correspondente
+                        expandToLevel(level);
+                    }
                     return;
                 }
 
@@ -1959,6 +2048,57 @@
                 li.appendChild(span);
                 
                 return li;
+            }
+
+            // Adiciona um handler para salvar antes de fechar a janela
+            window.addEventListener('beforeunload', function() {
+                // Se houver um salvamento pendente, força o salvamento imediato
+                if (saveTimeout) {
+                    forceSaveMindmap();
+                }
+            });
+
+            // Função para expandir até um determinado nível
+            function expandToLevel(level) {
+                // Primeiro, expande todos os nós para poder acessá-los
+                const allNodes = mindmap.querySelectorAll('li:has(> div > ul)');
+                
+                // Se level for 0 ou 4+, trata como casos especiais
+                if (level === 0 || level >= 4) {
+                    allNodes.forEach(node => {
+                        node.classList.toggle('collapsed', level === 0);
+                    });
+                    
+                    // Mostra feedback
+                    showSaveFeedback(level === 0 ? 'Todos os nós colapsados' : 'Todos os nós expandidos');
+                    return;
+                }
+                
+                // Para níveis 1-3, primeiro expande tudo
+                allNodes.forEach(node => {
+                    node.classList.remove('collapsed');
+                });
+                
+                // Depois, colapsa os nós com base na profundidade
+                allNodes.forEach(node => {
+                    // Calcula a profundidade do nó
+                    let depth = 0;
+                    let parent = node;
+                    while (parent && parent !== mindmap) {
+                        if (parent.tagName === 'LI') {
+                            depth++;
+                        }
+                        parent = parent.parentElement;
+                    }
+                    
+                    // Colapsa nós que estão além do nível especificado
+                    if (depth > level) {
+                        node.classList.add('collapsed');
+                    }
+                });
+                
+                // Mostra feedback
+                showSaveFeedback(`Expandido até o nível ${level}`);
             }
         });
     </script>
