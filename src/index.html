@@ -229,19 +229,106 @@
             position: fixed;
             bottom: 1em;
             right: 1em;
-            background-color: rgba(0,0,0,0.8);
-            padding: 1em;
-            border-radius: 5px;
+            background-color: rgba(20, 30, 40, 0.95);
+            padding: 1.5em;
+            border-radius: 8px;
             font-size: 0.9em;
-            color: #aaa;
+            color: #d5d5d5;
             display: none;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #3498db;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .help h3 {
+            color: #3498db;
+            margin-top: 0;
+            margin-bottom: 1em;
+            font-size: 1.2em;
+            text-align: center;
+            border-bottom: 1px solid #3498db;
+            padding-bottom: 0.5em;
+        }
+
+        .help-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1em;
+        }
+
+        .help-section {
+            margin-bottom: 1em;
+        }
+
+        .help-section h4 {
+            color: #e67e22;
+            margin-top: 0;
+            margin-bottom: 0.5em;
+            font-size: 1em;
+            border-left: 3px solid #e67e22;
+            padding-left: 0.5em;
+        }
+
+        .help-section .shortcut {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4em;
+            align-items: center;
+        }
+
+        .help-section .shortcut-keys {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .help-section .shortcut-description {
+            color: #bdc3c7;
+            flex: 1;
+            margin-left: 0.5em;
         }
 
         .help kbd {
             background-color: #2c3e50;
+            color: #ecf0f1;
             padding: 0.2em 0.5em;
-            border-radius: 3px;
-            margin: 0 0.3em;
+            border-radius: 4px;
+            margin: 0 0.2em;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+            border: 1px solid #34495e;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            min-width: 1.6em;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .help .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #95a5a6;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .help .close-button:hover {
+            color: #ecf0f1;
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
         /* Estilo para nó em edição */
@@ -559,6 +646,198 @@
             70% { opacity: 1; }
             100% { opacity: 0; }
         }
+
+        .settings-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(20, 30, 40, 0.95);
+            padding: 1.5em;
+            border-radius: 8px;
+            border: 1px solid #3498db;
+            display: none;
+            z-index: 1000;
+            min-width: 400px;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            font-family: 'Courier New', monospace;
+            color: #d5d5d5;
+        }
+
+        .settings-modal.active {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -48%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        .settings-modal h3 {
+            color: #3498db;
+            margin-top: 0;
+            margin-bottom: 1em;
+            font-size: 1.2em;
+            text-align: center;
+            border-bottom: 1px solid #3498db;
+            padding-bottom: 0.5em;
+        }
+
+        .settings-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5em;
+            margin-bottom: 1.5em;
+        }
+
+        .settings-section {
+            margin-bottom: 0.5em;
+        }
+
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em;
+        }
+
+        .setting-item label {
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+
+        .setting-item input[type="text"] {
+            background-color: #34495e;
+            border: 1px solid #3498db;
+            color: white;
+            padding: 0.5em;
+            border-radius: 4px;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .setting-item input[type="text"]:focus {
+            outline: none;
+            border-color: #2ecc71;
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.3);
+        }
+
+        .setting-description {
+            color: #bdc3c7;
+            font-size: 0.9em;
+            margin-top: 0.2em;
+            opacity: 0.8;
+        }
+
+        .settings-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8em;
+            margin-top: 1em;
+            border-top: 1px solid rgba(52, 152, 219, 0.3);
+            padding-top: 1em;
+        }
+
+        .settings-modal .cancel-button {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 0.5em 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background-color 0.2s;
+        }
+
+        .settings-modal .save-button {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 0.5em 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background-color 0.2s;
+        }
+
+        .settings-modal .cancel-button:hover {
+            background-color: #7f8c8d;
+        }
+
+        .settings-modal .save-button:hover {
+            background-color: #27ae60;
+        }
+
+        .toggle-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-wrapper input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-wrapper .toggle-label {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #95a5a6;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-wrapper .toggle-label:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .toggle-wrapper input:checked + .toggle-label {
+            background-color: #2ecc71;
+        }
+
+        .toggle-wrapper input:checked + .toggle-label:before {
+            transform: translateX(20px);
+        }
+
+        .settings-modal .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #95a5a6;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .settings-modal .close-button:hover {
+            color: #ecf0f1;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -578,30 +857,125 @@
         <div class="commands"></div>
     </div>
     <div class="help">
-        Navegação: 
-        <kbd>h</kbd> esquerda 
-        <kbd>j</kbd> baixo 
-        <kbd>k</kbd> cima 
-        <kbd>l</kbd> direita
-        <kbd>⇧</kbd>+<kbd>j</kbd> mover baixo
-        <kbd>⇧</kbd>+<kbd>k</kbd> mover cima
-        <kbd>space</kbd> expandir/colapsar
-        <kbd>/</kbd> buscar
-        <kbd>n</kbd> próximo
-        <kbd>N</kbd> anterior
-        <kbd>o</kbd> novo abaixo
-        <kbd>O</kbd> novo acima
-        <kbd>tab</kbd> novo filho
-        <kbd>e</kbd> editar
-        <kbd>i</kbd> editar início
-        <kbd>A</kbd> editar fim
-        <kbd>c</kbd> substituir
-        <kbd>f</kbd> focar
-        <kbd>?</kbd> ajuda
-        <kbd>⌘/ctrl</kbd>+<kbd>k</kbd> adicionar link
-        <kbd>⇧</kbd>+<kbd>u</kbd> abrir link
-        <kbd>1</kbd>-<kbd>4</kbd> expandir níveis
-        <kbd>0</kbd> expandir tudo
+        <button class="close-button">&times;</button>
+        <h3>Atalhos de Teclado</h3>
+        <div class="help-content">
+            <div class="help-section">
+                <h4>Navegação</h4>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>h</kbd></div>
+                    <div class="shortcut-description">Esquerda (nó pai)</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>j</kbd></div>
+                    <div class="shortcut-description">Baixo (próximo irmão)</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>k</kbd></div>
+                    <div class="shortcut-description">Cima (irmão anterior)</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>l</kbd></div>
+                    <div class="shortcut-description">Direita (primeiro filho)</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>⇧</kbd>+<kbd>j</kbd></div>
+                    <div class="shortcut-description">Mover nó para baixo</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>⇧</kbd>+<kbd>k</kbd></div>
+                    <div class="shortcut-description">Mover nó para cima</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>f</kbd></div>
+                    <div class="shortcut-description">Focar no nó selecionado</div>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h4>Edição</h4>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>e</kbd></div>
+                    <div class="shortcut-description">Editar no fim</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>i</kbd></div>
+                    <div class="shortcut-description">Editar no início</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>A</kbd></div>
+                    <div class="shortcut-description">Editar no fim</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>c</kbd></div>
+                    <div class="shortcut-description">Substituir (selecionar todo texto)</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>o</kbd></div>
+                    <div class="shortcut-description">Novo nó abaixo</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>O</kbd></div>
+                    <div class="shortcut-description">Novo nó acima</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>tab</kbd></div>
+                    <div class="shortcut-description">Novo nó filho</div>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h4>Visualização</h4>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>espaço</kbd></div>
+                    <div class="shortcut-description">Expandir/colapsar</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>0</kbd></div>
+                    <div class="shortcut-description">Expandir todos os níveis</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>1</kbd>-<kbd>4</kbd></div>
+                    <div class="shortcut-description">Expandir até nível específico</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>?</kbd></div>
+                    <div class="shortcut-description">Mostrar/esconder ajuda</div>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h4>Extras</h4>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>/</kbd></div>
+                    <div class="shortcut-description">Buscar</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>n</kbd></div>
+                    <div class="shortcut-description">Próximo resultado</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>N</kbd></div>
+                    <div class="shortcut-description">Resultado anterior</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>t</kbd></div>
+                    <div class="shortcut-description">Gerenciar tags</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>⌘/ctrl</kbd>+<kbd>k</kbd></div>
+                    <div class="shortcut-description">Adicionar link</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>⇧</kbd>+<kbd>u</kbd></div>
+                    <div class="shortcut-description">Abrir link</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-keys"><kbd>⌘/ctrl</kbd>+<kbd>,</kbd></div>
+                    <div class="shortcut-description">Configurações</div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="link-modal">
         <input type="text" placeholder="Cole o link aqui..." />
@@ -619,13 +993,64 @@
         </div>
         <div class="error"></div>
     </div>
+    <div class="settings-modal">
+        <button class="close-button">&times;</button>
+        <h3>Configurações</h3>
+        <div class="settings-content">
+            <div class="settings-section">
+                <div class="setting-item">
+                    <label for="save-path">Caminho do arquivo:</label>
+                    <input type="text" id="save-path" placeholder="Caminho para salvar o arquivo .md" />
+                </div>
+                <div class="setting-description">
+                    Defina o caminho completo onde o arquivo markdown será salvo automaticamente
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="setting-item">
+                    <label for="auto-save">Auto salvamento:</label>
+                    <div class="toggle-wrapper">
+                        <input type="checkbox" id="auto-save" checked />
+                        <label for="auto-save" class="toggle-label"></label>
+                    </div>
+                </div>
+                <div class="setting-description">
+                    Salvar automaticamente após alterações (recomendado)
+                </div>
+            </div>
+        </div>
+        <div class="settings-buttons">
+            <button class="cancel-button">Cancelar</button>
+            <button class="save-button">Salvar</button>
+        </div>
+    </div>
     <div class="save-feedback">Salvando...</div>
     <script>
-        const { ipcRenderer } = require('electron');
+        // Carrega o electron no início
+        const electron = require('electron');
+        const { ipcRenderer } = electron;
         const { loadMindmapFromMarkdown } = require('./markdown-parser');
         const { convertMindmapToMarkdown } = require('./html-to-markdown');
+        const { clipboard } = electron;
+
+        // Função para verificar se o IPC está funcionando
+        function checkIPC() {
+            console.log('Verificando conexão IPC...');
+            console.log('ipcRenderer disponível?', ipcRenderer ? 'Sim' : 'Não');
+            try {
+                // Tenta enviar uma mensagem para o processo principal
+                ipcRenderer.send('check-ipc', 'teste');
+                console.log('Mensagem de teste IPC enviada com sucesso');
+            } catch (error) {
+                console.error('Erro ao enviar mensagem IPC:', error);
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Verifica IPC no início
+            checkIPC();
+            
             const mindmap = document.querySelector('.mindmap');
             const searchContainer = document.querySelector('.search-container');
             const searchInput = searchContainer.querySelector('input');
@@ -721,6 +1146,15 @@
                     execute: () => {
                         forceSaveMindmap();
                     }
+                },
+                {
+                    id: 'open-settings',
+                    title: 'Configurações',
+                    description: 'Abre a janela de configurações',
+                    icon: '⚙️',
+                    execute: () => {
+                        openSettings();
+                    }
                 }
             ];
 
@@ -809,17 +1243,33 @@
                     showCommandPalette();
                 }
             });
-
+            
             // Carrega o conteúdo inicial do arquivo markdown
-            const mindmapContent = loadMindmapFromMarkdown();
-            if (mindmapContent) {
-                mindmap.innerHTML = mindmapContent.html;
-                availableTags = mindmapContent.availableTags;
-                // Seleciona o primeiro nó após carregar o conteúdo
-                currentSelected = mindmap.querySelector('li > span:first-of-type');
-                if (currentSelected) {
-                    currentSelected.classList.add('selected');
+            try {
+                console.log('Iniciando carregamento do mindmap...');
+                const mindmapContent = loadMindmapFromMarkdown();
+                console.log('Mindmap carregado:', mindmapContent);
+                
+                if (mindmapContent) {
+                    console.log('HTML gerado:', mindmapContent.html);
+                    mindmap.innerHTML = mindmapContent.html;
+                    availableTags = mindmapContent.availableTags;
+                    // Seleciona o primeiro nó após carregar o conteúdo
+                    currentSelected = mindmap.querySelector('li > span:first-of-type');
+                    if (currentSelected) {
+                        currentSelected.classList.add('selected');
+                    } else {
+                        console.error('Nenhum nó foi encontrado no mindmap carregado');
+                    }
+                } else {
+                    console.error('Falha ao carregar o conteúdo do mindmap');
                 }
+            } catch (error) {
+                console.error('Erro durante o carregamento do mindmap:', error);
+                // Inicializa com um nó raiz vazio se falhar
+                mindmap.innerHTML = '<ul><li><span><span class="node-text">Root</span></span></li></ul>';
+                currentSelected = mindmap.querySelector('li > span');
+                currentSelected.classList.add('selected');
             }
             
             // Elementos do feedback de salvamento
@@ -939,7 +1389,7 @@
                 attributeOldValue: true,
                 attributeFilter: ['data-tags', 'data-link', 'class', 'contenteditable']
             });
-
+            
             // Inicializa todos os nós com filhos como colapsados
             function initializeNodes() {
                 const nodesWithChildren = mindmap.querySelectorAll('li:has(> div > ul)');
@@ -1007,7 +1457,41 @@
             // Função para copiar um nó e seus filhos
             function copyNode(node) {
                 const li = node.closest('li');
-                return li.cloneNode(true);
+                
+                // Copia o nó para uso interno
+                const clonedNode = li.cloneNode(true);
+                
+                // Extrai o texto do nó e seus filhos para o clipboard
+                function extractNodeText(element, level = 0) {
+                    let text = '';
+                    const indent = '  '.repeat(level);
+                    
+                    // Pega o texto do nó atual
+                    const nodeText = element.querySelector(':scope > span .node-text')?.textContent.trim();
+                    if (nodeText) {
+                        text += indent + '- ' + nodeText + '\n';
+                    }
+                    
+                    // Recursivamente extrai o texto dos filhos
+                    const childList = element.querySelector(':scope > div > ul');
+                    if (childList) {
+                        const children = childList.children;
+                        for (let child of children) {
+                            text += extractNodeText(child, level + 1);
+                        }
+                    }
+                    
+                    return text;
+                }
+                
+                // Extrai o texto hierárquico e copia para o clipboard
+                const textContent = extractNodeText(li);
+                clipboard.writeText(textContent);
+                
+                // Mostra feedback
+                showSaveFeedback('Nó copiado para o clipboard');
+                
+                return clonedNode;
             }
 
             // Função para deletar um nó
@@ -1085,8 +1569,16 @@
                 newSpan.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
 
+            // Adiciona um event listener para o input de busca
+            searchInput.addEventListener('input', function() {
+                console.log('Buscando:', this.value);
+                performSearch(this.value);
+            });
+
             // Função para realizar a busca
             function performSearch(query) {
+                console.log('Executando busca por:', query);
+                
                 // Limpa matches anteriores
                 searchMatches.forEach(match => {
                     match.classList.remove('search-match', 'current-match');
@@ -1101,13 +1593,20 @@
 
                 // Encontra todos os spans que contêm o texto
                 const spans = mindmap.querySelectorAll('li > span');
+                console.log('Total de nós para buscar:', spans.length);
+                let matchCount = 0;
+                
                 spans.forEach(span => {
                     const textSpan = span.querySelector('.node-text');
                     if (textSpan && textSpan.textContent.toLowerCase().includes(query.toLowerCase())) {
                         searchMatches.push(span);
                         span.classList.add('search-match');
+                        matchCount++;
+                        console.log('Match encontrado:', textSpan.textContent);
                     }
                 });
+
+                console.log('Total de matches encontrados:', matchCount);
 
                 // Atualiza resultados com o formato "atual/total"
                 if (searchMatches.length > 0) {
@@ -1661,292 +2160,6 @@
             `;
             document.head.appendChild(style);
 
-            // Handler de teclado atualizado
-            document.addEventListener('keydown', function(e) {
-                // Se o command palette está ativo, trata apenas seus comandos específicos
-                if (commandPalette.classList.contains('active')) {
-                    switch(e.key) {
-                        case 'ArrowDown':
-                            e.preventDefault();
-                            selectedCommandIndex = Math.min(selectedCommandIndex + 1, commands.length - 1);
-                            filterCommands(commandInput.value);
-                            break;
-                        case 'ArrowUp':
-                            e.preventDefault();
-                            selectedCommandIndex = Math.max(selectedCommandIndex - 1, 0);
-                            filterCommands(commandInput.value);
-                            break;
-                        case 'Enter':
-                            e.preventDefault();
-                            executeSelectedCommand();
-                            break;
-                        case 'Escape':
-                            e.preventDefault();
-                            hideCommandPalette();
-                            break;
-                        case 'Tab':
-                            e.preventDefault();
-                            break;
-                    }
-                    return;
-                }
-
-                // Se o modal de link está ativo
-                if (linkModal.classList.contains('active')) {
-                    if (e.key === 'Tab') {
-                        e.preventDefault();
-                        return;
-                    }
-                    return;
-                }
-
-                // Se a busca está ativa
-                if (searchContainer.classList.contains('active')) {
-                    if (e.key === 'Tab') {
-                        e.preventDefault();
-                        return;
-                    }
-                    
-                    switch(e.key) {
-                        case 'Escape':
-                            searchContainer.classList.remove('active');
-                            performSearch(''); // Limpa resultados
-                            searchInput.blur(); // Remove o foco do input
-                            break;
-                        case 'Enter':
-                            e.preventDefault();
-                            if (currentMatchIndex >= 0) {
-                                // Seleciona o nó atual do match
-                                const match = searchMatches[currentMatchIndex];
-                                currentSelected.classList.remove('selected');
-                                match.classList.add('selected');
-                                currentSelected = match;
-                                
-                                // Fecha a busca mantendo os matches
-                                searchContainer.classList.remove('active');
-                                searchInput.value = '';
-                                searchResults.textContent = '';
-                                searchInput.blur();
-                            }
-                            break;
-                        case 'n':
-                            e.preventDefault();
-                            if (searchMatches.length > 0) {
-                                navigateToMatch(currentMatchIndex + (e.shiftKey ? -1 : 1));
-                            }
-                            break;
-                    }
-                    return;
-                }
-
-                // Se o modal de tags está ativo
-                if (tagsModal.classList.contains('active')) {
-                    if (e.key === 'Tab') {
-                        e.preventDefault();
-                        return;
-                    }
-                    return;
-                }
-
-                let nextElement = null;
-
-                // Atalhos globais
-                if (e.key === ':' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                    e.preventDefault();
-                    showCommandPalette();
-                    return;
-                }
-
-                // Atalho para salvar (Ctrl+S ou Cmd+S)
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-                    e.preventDefault();
-                    forceSaveMindmap();
-                    return;
-                }
-
-                // Atalho para adicionar link (Ctrl+K ou Cmd+K)
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-                    e.preventDefault();
-                    showLinkModal();
-                    return;
-                }
-
-                // Atalhos numéricos para expandir níveis
-                if (!isNaN(parseInt(e.key)) && e.key >= '0' && e.key <= '9') {
-                    const level = parseInt(e.key);
-                    if (level === 0) {
-                        // 0 expande todos os níveis
-                        expandToLevel(4);
-                    } else {
-                        // 1-4 expande até o nível correspondente
-                        expandToLevel(level);
-                    }
-                    return;
-                }
-
-                switch(e.key.toLowerCase()) {
-                    case '/':
-                        e.preventDefault();
-                        searchContainer.classList.add('active');
-                        searchInput.value = '';
-                        searchInput.focus();
-                        break;
-                    case 'u':
-                        if (e.shiftKey) {
-                            e.preventDefault();
-                            openLink();
-                            return;
-                        }
-                        break;
-                    case 'escape':
-                        e.preventDefault();
-                        // Limpa os resultados da busca
-                        searchMatches.forEach(match => {
-                            match.classList.remove('search-match', 'current-match');
-                        });
-                        searchMatches = [];
-                        currentMatchIndex = -1;
-                        break;
-                    case 'e':
-                        e.preventDefault();
-                        startEditing(currentSelected, 'end');
-                        break;
-                    case 'c':
-                        e.preventDefault();
-                        startEditing(currentSelected, 'select-all');
-                        break;
-                    case 'a':
-                        if (e.shiftKey) { // A
-                            e.preventDefault();
-                            startEditing(currentSelected, 'end');
-                        }
-                        break;
-                    case 'i':
-                        e.preventDefault();
-                        startEditing(currentSelected, 'start');
-                        break;
-                    case 'o':
-                        e.preventDefault();
-                        if (!e.shiftKey) {
-                            // o: adiciona irmão abaixo
-                            addSiblingNode(currentSelected, true);
-                        } else {
-                            // O: adiciona irmão acima
-                            addSiblingNode(currentSelected, false);
-                        }
-                        break;
-                    case 'tab':
-                        e.preventDefault();
-                        // Tab: adiciona filho
-                        addChildNode(currentSelected);
-                        break;
-                    case 'n':
-                        e.preventDefault();
-                        if (searchMatches.length > 0) {
-                            navigateToMatch(currentMatchIndex + (e.shiftKey ? -1 : 1));
-                        }
-                        break;
-                    case 'h':
-                        nextElement = findNextNavigableElement('left', currentSelected);
-                        break;
-                    case 'j':
-                        if (e.shiftKey) {
-                            e.preventDefault();
-                            moveNode(currentSelected, 'down');
-                        } else {
-                            nextElement = findNextNavigableElement('down', currentSelected);
-                        }
-                        break;
-                    case 'k':
-                        if (e.shiftKey) {
-                            e.preventDefault();
-                            moveNode(currentSelected, 'up');
-                        } else if (!e.metaKey && !e.ctrlKey) {
-                            nextElement = findNextNavigableElement('up', currentSelected);
-                        }
-                        break;
-                    case 'l':
-                        nextElement = findNextNavigableElement('right', currentSelected);
-                        break;
-                    case ' ':
-                    case 'enter':
-                        e.preventDefault();
-                        toggleNode(currentSelected);
-                        break;
-                    case '?':
-                        document.querySelector('.help').style.display = 
-                            document.querySelector('.help').style.display === 'none' ? 'block' : 'none';
-                        break;
-                    case '#':
-                    case '3':
-                        if (e.shiftKey) { // Shift+3
-                            e.preventDefault();
-                            deleteNode(currentSelected);
-                        }
-                        break;
-                    case 'y':
-                        e.preventDefault();
-                        copiedNode = copyNode(currentSelected);
-                        break;
-                    case 'p':
-                        e.preventDefault();
-                        if (copiedNode) {
-                            pasteNode(currentSelected, copiedNode);
-                        }
-                        break;
-                    case 'f':
-                        e.preventDefault();
-                        focusNode(currentSelected);
-                        break;
-                    case 't':
-                        e.preventDefault();
-                        showTagsModal();
-                        break;
-                }
-
-                if (nextElement) {
-                    currentSelected.classList.remove('selected');
-                    nextElement.classList.add('selected');
-                    currentSelected = nextElement;
-                    nextElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            });
-
-            // Evento de input para busca
-            searchInput.addEventListener('input', function(e) {
-                performSearch(e.target.value);
-            });
-
-            // Adiciona interatividade ao clicar
-            mindmap.addEventListener('click', function(e) {
-                if (e.target.tagName === 'SPAN') {
-                    currentSelected.classList.remove('selected');
-                    e.target.classList.add('selected');
-                    currentSelected = e.target;
-                    toggleNode(e.target);
-                }
-            });
-
-            // Função para coletar nós por tag
-            function collectNodesByTag() {
-                const nodesByTag = new Map();
-                const spans = mindmap.querySelectorAll('li > span');
-                
-                spans.forEach(span => {
-                    const tags = JSON.parse(span.dataset.tags || '[]');
-                    const text = span.childNodes[0].textContent.trim();
-                    
-                    tags.forEach(tag => {
-                        if (!nodesByTag.has(tag)) {
-                            nodesByTag.set(tag, []);
-                        }
-                        nodesByTag.get(tag).push(text);
-                    });
-                });
-                
-                return nodesByTag;
-            }
-
             // Função para mostrar o resumo por tags
             function showTagsSummary() {
                 const nodesByTag = collectNodesByTag();
@@ -2100,6 +2313,376 @@
                 // Mostra feedback
                 showSaveFeedback(`Expandido até o nível ${level}`);
             }
+
+            // Função para abrir as configurações
+            function openSettings() {
+                console.log('Abrindo modal de configurações');
+                
+                // Carrega as configurações atuais
+                ipcRenderer.invoke('get-settings').then(settings => {
+                    console.log('Configurações carregadas:', settings);
+                    
+                    // Preenche o formulário com as configurações
+                    document.getElementById('save-path').value = settings.savePath || '';
+                    document.getElementById('auto-save').checked = settings.autoSave !== false; // true por padrão
+                    
+                    // Exibe o modal
+                    const settingsModal = document.querySelector('.settings-modal');
+                    settingsModal.classList.add('active');
+                }).catch(error => {
+                    console.error('Erro ao carregar configurações:', error);
+                    showSaveFeedback('Erro ao carregar configurações', true);
+                });
+            }
+            
+            // Função para salvar as configurações
+            function saveSettings() {
+                const savePath = document.getElementById('save-path').value;
+                const autoSave = document.getElementById('auto-save').checked;
+                
+                // Validação básica
+                if (!savePath) {
+                    showSaveFeedback('Caminho de salvamento não pode ser vazio', true);
+                    return;
+                }
+                
+                const settings = {
+                    savePath,
+                    autoSave
+                };
+                
+                console.log('Salvando configurações:', settings);
+                
+                ipcRenderer.invoke('save-settings', settings).then(() => {
+                    console.log('Configurações salvas com sucesso');
+                    hideSettingsModal();
+                    showSaveFeedback('Configurações salvas com sucesso');
+                }).catch(error => {
+                    console.error('Erro ao salvar configurações:', error);
+                    showSaveFeedback('Erro ao salvar configurações: ' + error.message, true);
+                });
+            }
+            
+            // Função para fechar o modal de configurações
+            function hideSettingsModal() {
+                document.querySelector('.settings-modal').classList.remove('active');
+            }
+
+            // Função para coletar nós por tag
+            function collectNodesByTag() {
+                const nodesByTag = new Map();
+                const spans = mindmap.querySelectorAll('li > span');
+                
+                spans.forEach(span => {
+                    const tags = JSON.parse(span.dataset.tags || '[]');
+                    const text = span.childNodes[0].textContent.trim();
+                    
+                    tags.forEach(tag => {
+                        if (!nodesByTag.has(tag)) {
+                            nodesByTag.set(tag, []);
+                        }
+                        nodesByTag.get(tag).push(text);
+                    });
+                });
+                
+                return nodesByTag;
+            }
+
+            // Adiciona um handler específico para o atalho Cmd+,
+            document.addEventListener('keydown', function(e) {
+                // Apenas para o atalho Cmd+, ou Ctrl+,
+                if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+                    console.log('====================================');
+                    console.log('HANDLER ESPECÍFICO: Atalho Cmd+, ou Ctrl+, detectado');
+                    console.log('Tecla: ', e.key);
+                    console.log('Ctrl: ', e.ctrlKey);
+                    console.log('Meta: ', e.metaKey);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSettings();
+                    console.log('====================================');
+                    return false;
+                }
+            }, true); // Usando capturing phase para garantir que este manipulador seja executado primeiro
+
+            // Restaura o código do handler de teclado principal
+            document.addEventListener('keydown', function(e) {
+                // Se estiver editando um nó, apenas processa teclas específicas
+                const isEditing = document.querySelector('.node-text.editing') !== null;
+                if (isEditing) {
+                    return; // O próprio elemento em edição controla Enter e Escape
+                }
+
+                // Se o command palette está ativo, trata apenas seus comandos específicos
+                if (commandPalette.classList.contains('active')) {
+                    switch(e.key) {
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            selectedCommandIndex = Math.min(selectedCommandIndex + 1, commands.length - 1);
+                            filterCommands(commandInput.value);
+                            break;
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            selectedCommandIndex = Math.max(selectedCommandIndex - 1, 0);
+                            filterCommands(commandInput.value);
+                            break;
+                        case 'Enter':
+                            e.preventDefault();
+                            executeSelectedCommand();
+                            break;
+                        case 'Escape':
+                            e.preventDefault();
+                            hideCommandPalette();
+                            break;
+                        case 'Tab':
+                            e.preventDefault();
+                            break;
+                    }
+                    return;
+                }
+
+                // Se o modal de link está ativo
+                if (linkModal.classList.contains('active')) {
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        return;
+                    }
+                    return;
+                }
+
+                // Se a busca está ativa
+                if (searchContainer.classList.contains('active')) {
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        return;
+                    }
+                    
+                    switch(e.key) {
+                        case 'Escape':
+                            searchContainer.classList.remove('active');
+                            performSearch(''); // Limpa resultados
+                            searchInput.blur(); // Remove o foco do input
+                            break;
+                        case 'Enter':
+                            e.preventDefault();
+                            if (currentMatchIndex >= 0) {
+                                // Seleciona o nó atual do match
+                                const match = searchMatches[currentMatchIndex];
+                                currentSelected.classList.remove('selected');
+                                match.classList.add('selected');
+                                currentSelected = match;
+                                
+                                // Fecha a busca mantendo os matches
+                                searchContainer.classList.remove('active');
+                                searchInput.value = '';
+                                searchInput.blur();
+                            }
+                            break;
+                        case 'n':
+                            // Só navega entre resultados se a tecla Ctrl ou Cmd estiver pressionada
+                            if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            if (searchMatches.length > 0) {
+                                navigateToMatch(currentMatchIndex + (e.shiftKey ? -1 : 1));
+                            }
+                        }
+                        break;
+                    }
+                    return;
+                }
+
+                // Se o modal de tags está ativo
+                if (tagsModal.classList.contains('active')) {
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        return;
+                    }
+                    return;
+                }
+
+                let nextElement = null;
+
+                // Atalhos globais
+                if (e.key === ':' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    e.preventDefault();
+                    showCommandPalette();
+                    return;
+                }
+
+                // Atalho para salvar (Ctrl+S ou Cmd+S)
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                    e.preventDefault();
+                    forceSaveMindmap();
+                    return;
+                }
+
+                // Atalho para adicionar link (Ctrl+K ou Cmd+K)
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    showLinkModal();
+                    return;
+                }
+
+                // Atalhos numéricos para expandir níveis
+                if (!isNaN(parseInt(e.key)) && e.key >= '0' && e.key <= '9') {
+                    const level = parseInt(e.key);
+                    if (level === 0) {
+                        // 0 expande todos os níveis
+                        expandToLevel(4);
+                    } else {
+                        // 1-4 expande até o nível correspondente
+                        expandToLevel(level);
+                    }
+                    return;
+                }
+
+                switch(e.key.toLowerCase()) {
+                    case '/':
+                        e.preventDefault();
+                        searchContainer.classList.add('active');
+                        searchInput.value = '';
+                        searchInput.focus();
+                        break;
+                    case 'u':
+                        if (e.shiftKey) {
+                            e.preventDefault();
+                            openLink();
+                            return;
+                        }
+                        break;
+                    case 'escape':
+                        e.preventDefault();
+                        // Limpa os resultados da busca
+                        searchMatches.forEach(match => {
+                            match.classList.remove('search-match', 'current-match');
+                        });
+                        searchMatches = [];
+                        currentMatchIndex = -1;
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        startEditing(currentSelected, 'end');
+                        break;
+                    case 'c':
+                        e.preventDefault();
+                        startEditing(currentSelected, 'select-all');
+                        break;
+                    case 'a':
+                        if (e.shiftKey) { // A
+                            e.preventDefault();
+                            startEditing(currentSelected, 'end');
+                        }
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        startEditing(currentSelected, 'start');
+                        break;
+                    case 'o':
+                        e.preventDefault();
+                        if (!e.shiftKey) {
+                            // o: adiciona irmão abaixo
+                            addSiblingNode(currentSelected, true);
+                        } else {
+                            // O: adiciona irmão acima
+                            addSiblingNode(currentSelected, false);
+                        }
+                        break;
+                    case 'tab':
+                        e.preventDefault();
+                        // Tab: adiciona filho
+                        addChildNode(currentSelected);
+                        break;
+                    case 'n':
+                        // Navega entre resultados da busca se houver resultados
+                        if (searchMatches.length > 0) {
+                            e.preventDefault();
+                            navigateToMatch(currentMatchIndex + (e.shiftKey ? -1 : 1));
+                        }
+                        break;
+                    case 'h':
+                        nextElement = findNextNavigableElement('left', currentSelected);
+                        break;
+                    case 'j':
+                        if (e.shiftKey) {
+                            e.preventDefault();
+                            moveNode(currentSelected, 'down');
+                        } else {
+                        nextElement = findNextNavigableElement('down', currentSelected);
+                        }
+                        break;
+                    case 'k':
+                        if (e.shiftKey) {
+                            e.preventDefault();
+                            moveNode(currentSelected, 'up');
+                        } else if (!e.metaKey && !e.ctrlKey) {
+                        nextElement = findNextNavigableElement('up', currentSelected);
+                        }
+                        break;
+                    case 'l':
+                        nextElement = findNextNavigableElement('right', currentSelected);
+                        break;
+                    case ' ':
+                    case 'enter':
+                        e.preventDefault();
+                        toggleNode(currentSelected);
+                        break;
+                    case '?':
+                        document.querySelector('.help').style.display = 
+                            document.querySelector('.help').style.display === 'none' ? 'block' : 'none';
+                        break;
+                    case '#':
+                    case '3':
+                        if (e.shiftKey) { // Shift+3
+                            e.preventDefault();
+                            deleteNode(currentSelected);
+                        }
+                        break;
+                    case 'y':
+                        e.preventDefault();
+                        copiedNode = copyNode(currentSelected);
+                        break;
+                    case 'p':
+                        e.preventDefault();
+                        if (copiedNode) {
+                            pasteNode(currentSelected, copiedNode);
+                        }
+                        break;
+                    case 'f':
+                        e.preventDefault();
+                        focusNode(currentSelected);
+                        break;
+                    case 't':
+                        e.preventDefault();
+                        showTagsModal();
+                        break;
+                }
+
+                if (nextElement) {
+                    currentSelected.classList.remove('selected');
+                    nextElement.classList.add('selected');
+                    currentSelected = nextElement;
+                    nextElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+
+            // Adiciona funcionalidade para o botão de fechar da ajuda
+            document.querySelector('.help .close-button').addEventListener('click', function() {
+                document.querySelector('.help').style.display = 'none';
+            });
+
+            // Adiciona event listeners para os botões do modal de configurações
+            document.querySelector('.settings-modal .close-button').addEventListener('click', hideSettingsModal);
+            document.querySelector('.settings-modal .cancel-button').addEventListener('click', hideSettingsModal);
+            document.querySelector('.settings-modal .save-button').addEventListener('click', saveSettings);
+            
+            // Adiciona event listener para fechar o modal com a tecla ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (document.querySelector('.settings-modal').classList.contains('active')) {
+                        hideSettingsModal();
+                    }
+                }
+            });
         });
     </script>
 </body>

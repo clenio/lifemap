@@ -2,6 +2,7 @@ const { marked } = require('marked');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const config = require('./config');
 
 // Regex para identificar a seção de metadados
 const METADATA_REGEX = /^---\n([\s\S]*?)\n---\n/;
@@ -245,6 +246,12 @@ function initializeMarkdownFile(filePath) {
     try {
         // Verifica se o arquivo existe
         if (!fs.existsSync(filePath)) {
+            // Certifica-se de que o diretório existe
+            const directory = path.dirname(filePath);
+            if (!fs.existsSync(directory)) {
+                fs.mkdirSync(directory, { recursive: true });
+            }
+            
             // Se não existe, cria com a estrutura inicial
             const initialContent = '---\ntags: []\n---\n\n# Root\n';
             fs.writeFileSync(filePath, initialContent, 'utf-8');
@@ -268,51 +275,37 @@ function initializeMarkdownFile(filePath) {
 }
 
 function loadMindmapFromMarkdown() {
-    const filePath = path.join(os.homedir(), 'lifemap.md');
     try {
-        // Inicializa o arquivo se necessário
+        // Usa o caminho da configuração
+        const filePath = config.getSavePath();
+        
+        // Inicializa o arquivo se ele não existir ou não tiver metadados
         initializeMarkdownFile(filePath);
         
-        const markdown = fs.readFileSync(filePath, 'utf-8');
-        const { metadata, content } = parseMetadata(markdown);
-        const mindmapData = parseMarkdownToMindmap(content);
+        // Lê o conteúdo do arquivo
+        const content = fs.readFileSync(filePath, 'utf-8');
         
-        // Garante que as tags existam no metadata
-        if (!metadata.tags) {
-            metadata.tags = [];
-        }
+        // Extrai os metadados
+        const { metadata, content: markdownContent } = parseMetadata(content);
         
-        // Coleta todas as tags atualmente em uso no mindmap
-        const allUsedTags = new Set();
-        const collectTags = (nodes) => {
-            nodes.forEach(node => {
-                if (node.tags) {
-                    node.tags.forEach(tag => allUsedTags.add(tag));
-                }
-                if (node.children) {
-                    collectTags(node.children);
-                }
-            });
-        };
-        collectTags(mindmapData);
+        // Usa o Marked para converter o markdown para tokens
+        const tokens = marked.lexer(markdownContent);
         
-        // Combina as tags do metadata com as tags em uso
-        metadata.tags = Array.from(new Set([...metadata.tags, ...allUsedTags]));
+        // Converte os tokens para o formato do mindmap
+        const nodes = convertTokensToMindmap(tokens);
         
-        // Atualiza o arquivo com os metadados atualizados
-        const newContent = generateMetadata(metadata) + content;
-        fs.writeFileSync(filePath, newContent, 'utf-8');
+        // Gera o HTML a partir dos nós
+        const html = generateHTML(nodes);
         
-        // Adiciona as tags disponíveis ao HTML como um atributo data
-        const html = generateHTML(mindmapData);
         return {
             html,
-            availableTags: metadata.tags
+            availableTags: metadata.tags || []
         };
     } catch (error) {
-        console.error('Erro ao ler arquivo markdown:', error);
+        console.error('Erro ao carregar mindmap:', error);
+        // Retorna um mindmap padrão em caso de erro
         return {
-            html: '<ul><li><span>Root</span></li></ul>',
+            html: '<ul><li><span><span class="node-text">Root</span></span></li></ul>',
             availableTags: []
         };
     }

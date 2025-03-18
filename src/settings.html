@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
+    <title>Configurações - LifeMap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #1a1e21;
+            padding: 2em;
+            color: #ffffff;
+        }
+
+        h1 {
+            margin-bottom: 1.5em;
+            color: #3498db;
+            text-align: center;
+        }
+
+        .settings-container {
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 1.5em;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5em;
+            color: #95a5a6;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.5em;
+            background-color: #2c3e50;
+            border: 1px solid #3498db;
+            color: white;
+            border-radius: 3px;
+            font-family: inherit;
+            flex: 1;
+        }
+
+        button {
+            padding: 0.5em 1em;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button.browse {
+            white-space: nowrap;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1em;
+            margin-top: 2em;
+        }
+
+        button.cancel {
+            background-color: #95a5a6;
+        }
+
+        button.cancel:hover {
+            background-color: #7f8c8d;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 1em;
+            padding: 0.5em;
+            color: #2ecc71;
+            display: none;
+        }
+
+        .message.error {
+            color: #e74c3c;
+        }
+
+        .message.active {
+            display: block;
+            animation: fadeOut 3s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <h1>Configurações do LifeMap</h1>
+        
+        <div class="form-group">
+            <label for="save-path">Local de salvamento:</label>
+            <div class="input-group">
+                <input type="text" id="save-path" readonly>
+                <button class="browse" id="browse-button">Procurar...</button>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="cancel" id="cancel-button">Cancelar</button>
+            <button id="save-button">Salvar Configurações</button>
+        </div>
+        
+        <div class="message" id="message"></div>
+    </div>
+    
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        const savePathInput = document.getElementById('save-path');
+        const browseButton = document.getElementById('browse-button');
+        const saveButton = document.getElementById('save-button');
+        const cancelButton = document.getElementById('cancel-button');
+        const messageElement = document.getElementById('message');
+        
+        // Carrega a configuração atual
+        async function loadCurrentConfig() {
+            try {
+                const config = await ipcRenderer.invoke('get-config');
+                savePathInput.value = config.savePath;
+            } catch (error) {
+                showMessage('Erro ao carregar configurações', true);
+                console.error('Erro ao carregar configurações:', error);
+            }
+        }
+        
+        // Exibe uma mensagem
+        function showMessage(text, isError = false) {
+            messageElement.textContent = text;
+            messageElement.classList.toggle('error', isError);
+            messageElement.classList.add('active');
+            
+            // Remove a classe após a animação
+            setTimeout(() => {
+                messageElement.classList.remove('active');
+            }, 3000);
+        }
+        
+        // Evento para selecionar o local de salvamento
+        browseButton.addEventListener('click', async () => {
+            try {
+                const selectedPath = await ipcRenderer.invoke('select-save-path');
+                savePathInput.value = selectedPath;
+            } catch (error) {
+                showMessage('Erro ao selecionar caminho', true);
+                console.error('Erro ao selecionar caminho:', error);
+            }
+        });
+        
+        // Evento para salvar configurações
+        saveButton.addEventListener('click', () => {
+            const newConfig = {
+                savePath: savePathInput.value
+            };
+            
+            ipcRenderer.send('save-config', newConfig);
+        });
+        
+        // Evento para confirmar salvamento
+        ipcRenderer.on('config-saved', (event, success) => {
+            if (success) {
+                showMessage('Configurações salvas com sucesso!');
+                setTimeout(() => {
+                    window.close();
+                }, 2000);
+            } else {
+                showMessage('Erro ao salvar configurações', true);
+            }
+        });
+        
+        // Evento para cancelar
+        cancelButton.addEventListener('click', () => {
+            window.close();
+        });
+        
+        // Carrega a configuração ao iniciar
+        document.addEventListener('DOMContentLoaded', loadCurrentConfig);
+        
+        // Adiciona handler para tecla ESC fechar a janela
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                console.log('Tecla ESC pressionada, fechando janela de configurações');
+                window.close();
+            }
+        });
+    </script>
+</body>
+</html> 
