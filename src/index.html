@@ -1162,8 +1162,9 @@
             function showCommandPalette() {
                 commandPalette.classList.add('active');
                 commandInput.value = '';
-                commandInput.focus();
+                selectedCommandIndex = 0; // Seleciona o primeiro item por padrão
                 filterCommands('');
+                setTimeout(() => commandInput.focus(), 50); // Garante que o input será focado
             }
 
             // Função para esconder o command palette
@@ -1178,18 +1179,48 @@
                 const filteredCommands = commands.filter(cmd => 
                     cmd.title.toLowerCase().includes(query.toLowerCase()));
                 
+                // Seleciona o primeiro item por padrão quando há resultados
+                if (filteredCommands.length > 0 && (selectedCommandIndex === -1 || selectedCommandIndex >= filteredCommands.length)) {
+                    selectedCommandIndex = 0;
+                } else if (filteredCommands.length === 0) {
+                    selectedCommandIndex = -1;
+                }
+                
                 commandsList.innerHTML = filteredCommands.map((cmd, index) => `
-                    <div class="command-item${index === selectedCommandIndex ? ' selected' : ''}" data-index="${index}">
+                    <div class="command-item${index === selectedCommandIndex ? ' selected' : ''}" data-index="${index}" data-id="${cmd.id}">
                         <span class="icon">${cmd.icon}</span>
                         <span class="title">${cmd.title}</span>
                         <span class="description">${cmd.description}</span>
                     </div>
                 `).join('');
 
-                // Atualiza o índice selecionado se necessário
-                if (selectedCommandIndex >= filteredCommands.length) {
-                    selectedCommandIndex = filteredCommands.length - 1;
+                // Scroll para o item selecionado, se houver
+                if (selectedCommandIndex >= 0) {
+                    const selectedItem = commandsList.querySelector('.command-item.selected');
+                    if (selectedItem) {
+                        selectedItem.scrollIntoView({ block: 'nearest' });
+                    }
                 }
+                
+                // Adiciona event listeners para os itens
+                const commandItems = commandsList.querySelectorAll('.command-item');
+                commandItems.forEach(item => {
+                    // Click event
+                    item.addEventListener('click', () => {
+                        const index = parseInt(item.dataset.index);
+                        selectedCommandIndex = index;
+                        executeSelectedCommand();
+                    });
+                    
+                    // Mouseover event
+                    item.addEventListener('mouseover', () => {
+                        const index = parseInt(item.dataset.index);
+                        if (selectedCommandIndex !== index) {
+                            selectedCommandIndex = index;
+                            filterCommands(commandInput.value);
+                        }
+                    });
+                });
             }
 
             // Função para executar o comando selecionado
@@ -2162,20 +2193,32 @@
 
             // Função para mostrar o resumo por tags
             function showTagsSummary() {
+                console.log("===== RESUMO POR TAGS =====");
                 const nodesByTag = collectNodesByTag();
+                console.log("Nós coletados por tag:", nodesByTag);
                 let summary = '';
                 
                 // Ordena as tags alfabeticamente
                 const sortedTags = Array.from(nodesByTag.keys()).sort();
+                console.log("Tags ordenadas:", sortedTags);
                 
                 sortedTags.forEach(tag => {
                     const nodes = nodesByTag.get(tag);
                     summary += `@${tag}\n`;
+                    console.log(`Tag: ${tag}, ${nodes.length} nós encontrados`);
+                    
                     nodes.forEach(node => {
-                        summary += `- ${node}\n`;
+                        // Formata a hierarquia como "Bisavô > Avô > Pai > Filho"
+                        const hierarchyPath = node.hierarchy.join(' > ');
+                        console.log(`- Nó: ${node.text}`);
+                        console.log(`  Hierarquia: ${hierarchyPath}`);
+                        summary += `- ${hierarchyPath}\n`;
                     });
                     summary += '\n';
                 });
+                
+                console.log("Resumo completo:");
+                console.log(summary);
                 
                 // Cria ou atualiza o modal de resumo
                 let summaryModal = document.querySelector('.summary-modal');
@@ -2245,6 +2288,8 @@
                 setTimeout(() => {
                     document.addEventListener('click', closeOnClickOutside);
                 }, 100);
+                
+                console.log("===== FIM DO RESUMO POR TAGS =====");
             }
 
             // Função para criar um novo nó
@@ -2370,22 +2415,91 @@
 
             // Função para coletar nós por tag
             function collectNodesByTag() {
+                console.log("Coletando nós por tag...");
                 const nodesByTag = new Map();
                 const spans = mindmap.querySelectorAll('li > span');
+                console.log(`Total de ${spans.length} nós encontrados para analisar`);
                 
                 spans.forEach(span => {
                     const tags = JSON.parse(span.dataset.tags || '[]');
-                    const text = span.childNodes[0].textContent.trim();
                     
-                    tags.forEach(tag => {
-                        if (!nodesByTag.has(tag)) {
-                            nodesByTag.set(tag, []);
-                        }
-                        nodesByTag.get(tag).push(text);
-                    });
+                    // Busca o texto preferencialmente em .node-text
+                    const nodeTextElement = span.querySelector('.node-text');
+                    const text = nodeTextElement ? nodeTextElement.textContent.trim() : span.textContent.trim();
+                    
+                    console.log(`Nó: ${text}, Tags: ${tags.join(', ')}`);
+                    
+                    if (tags.length > 0) {
+                        // Obtém a hierarquia completa do nó
+                        const hierarchy = getNodeHierarchy(span);
+                        
+                        tags.forEach(tag => {
+                            if (!nodesByTag.has(tag)) {
+                                nodesByTag.set(tag, []);
+                            }
+                            nodesByTag.get(tag).push({
+                                text: text,
+                                hierarchy: hierarchy
+                            });
+                        });
+                    }
+                });
+                
+                // Log do resultado final
+                console.log("Resultado da coleta:");
+                nodesByTag.forEach((nodes, tag) => {
+                    console.log(`Tag ${tag}: ${nodes.length} nós`);
                 });
                 
                 return nodesByTag;
+            }
+
+            // Função para obter a hierarquia completa de um nó
+            function getNodeHierarchy(nodeSpan) {
+                console.log("Obtendo hierarquia para nó:", nodeSpan);
+                const hierarchy = [];
+                
+                // Adiciona o nó atual - buscando prioritariamente o elemento .node-text
+                const nodeTextElement = nodeSpan.querySelector('.node-text');
+                const nodeText = nodeTextElement ? nodeTextElement.textContent.trim() 
+                                                : nodeSpan.textContent.trim();
+                hierarchy.push(nodeText);
+                console.log("Texto do nó atual:", nodeText);
+                
+                // Percorre a árvore para cima para encontrar ancestrais
+                let currentLi = nodeSpan.closest('li');
+                
+                while (currentLi && currentLi.parentElement) {
+                    // Subir para o elemento UL pai
+                    const parentUl = currentLi.parentElement;
+                    if (parentUl.tagName !== 'UL') break;
+                    
+                    // Subir para o elemento DIV que contém este UL (se existir)
+                    const parentDiv = parentUl.parentElement;
+                    if (!parentDiv || parentDiv.tagName !== 'DIV') break;
+                    
+                    // Subir para o elemento LI que contém este DIV
+                    const parentLi = parentDiv.parentElement;
+                    if (!parentLi || parentLi.tagName !== 'LI') break;
+                    
+                    // Encontrar o elemento SPAN dentro do LI pai
+                    const parentSpan = parentLi.querySelector(':scope > span');
+                    if (!parentSpan) break;
+                    
+                    // Extrair o texto do nó pai
+                    const parentTextElement = parentSpan.querySelector('.node-text');
+                    const parentText = parentTextElement ? parentTextElement.textContent.trim() 
+                                                        : parentSpan.textContent.trim();
+                    
+                    console.log("Texto do nó pai:", parentText);
+                    hierarchy.unshift(parentText); // Adiciona no início da hierarquia
+                    
+                    // Continuar subindo na hierarquia
+                    currentLi = parentLi;
+                }
+                
+                console.log("Hierarquia completa:", hierarchy);
+                return hierarchy;
             }
 
             // Adiciona um handler específico para o atalho Cmd+,
@@ -2681,6 +2795,27 @@
                     if (document.querySelector('.settings-modal').classList.contains('active')) {
                         hideSettingsModal();
                     }
+                }
+            });
+
+            // Adiciona event listener para clique nos itens do command palette
+            commandsList.addEventListener('click', (e) => {
+                const item = e.target.closest('.command-item');
+                if (item) {
+                    const index = parseInt(item.dataset.index);
+                    selectedCommandIndex = index;
+                    filterCommands(commandInput.value); // Atualiza a seleção visual
+                    executeSelectedCommand();
+                }
+            });
+
+            // Adiciona event listener para mouseover nos itens (para seleção visual)
+            commandsList.addEventListener('mouseover', (e) => {
+                const item = e.target.closest('.command-item');
+                if (item) {
+                    const index = parseInt(item.dataset.index);
+                    selectedCommandIndex = index;
+                    filterCommands(commandInput.value); // Atualiza a seleção visual
                 }
             });
         });
