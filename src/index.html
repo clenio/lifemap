@@ -12,15 +12,45 @@
             box-sizing: border-box;
         }
 
+        /* Importação da Nerd Font */
+        @font-face {
+            font-family: "JetBrainsMono Nerd Font";
+            src: url("../fonts/JetBrainsMonoNerdFont-Regular.ttf") format("truetype");
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: "JetBrainsMono Nerd Font";
+            src: url("../fonts/JetBrainsMonoNerdFont-Bold.ttf") format("truetype");
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: "JetBrainsMono Nerd Font";
+            src: url("../fonts/JetBrainsMonoNerdFont-Italic.ttf") format("truetype");
+            font-weight: normal;
+            font-style: italic;
+        }
+
+        @font-face {
+            font-family: "JetBrainsMono Nerd Font";
+            src: url("../fonts/JetBrainsMonoNerdFont-BoldItalic.ttf") format("truetype");
+            font-weight: bold;
+            font-style: italic;
+        }
+
         body {
-            font-family: 'Courier New', monospace;
-            min-height: 100vh;
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            background-color: #1a1e21;
-            padding: 2em;
-            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            font-family: var(--font-family);
+            color: var(--text-color);
+            line-height: 1.6;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .mindmap {
@@ -119,21 +149,30 @@
         }
 
         .mindmap li > span.has-children::after {
-            content: ' [+]';
-            color: #ff8c00;
+            content: ' ';
+            font-family: var(--font-family);
+            color: var(--primary-color);
             margin-left: 0.5em;
+            font-size: 1.1em;
+            vertical-align: middle;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+
+        .mindmap li > span.has-children:hover::after {
+            opacity: 1;
+        }
+
+        .mindmap li.collapsed > span.has-children::after {
+            content: ' 󰐕';
+        }
+
+        .mindmap li:not(.collapsed) > span.has-children::after {
+            content: ' -';
         }
 
         .mindmap li.collapsed > div {
             display: none;
-        }
-
-        .mindmap li.collapsed > span.has-children::after {
-            content: ' [+]';
-        }
-
-        .mindmap li:not(.collapsed) > span.has-children::after {
-            content: ' [-]';
         }
 
         /* Indentação dos níveis */
@@ -142,12 +181,12 @@
         }
 
         /* Cores diferentes por nível para melhor visualização */
-        .mindmap > ul > li > span { color: #ffffff; } /* Nível 1 */
-        .mindmap > ul > li > div > ul > li > span { color: #e0e0e0; } /* Nível 2 */
-        .mindmap > ul > li > div > ul > li > div > ul > li > span { color: #c0c0c0; } /* Nível 3 */
-        .mindmap > ul > li > div > ul > li > div > ul > li > div > ul > li > span { color: #a0a0a0; } /* Nível 4 */
-        .mindmap > ul > li > div > ul > li > div > ul > li > div > ul > li > div > ul > li > span { color: #909090; } /* Nível 5 */
-        .mindmap > ul > li > div > ul > li > div > ul > li > div > ul > li > div > ul > li > div > ul > li > span { color: #808080; } /* Nível 6 */
+        .mindmap > ul > li > span { color: var(--level1-color); } /* Nível 1 */
+        .mindmap > ul > li > div > ul > li > span { color: var(--level2-color); } /* Nível 2 */
+        .mindmap > ul > li > div > ul > li > div > ul > li > span { color: var(--level3-color); } /* Nível 3 */
+        .mindmap > ul > li > div > ul > li > div > ul > li > div > ul > li > span { color: var(--level4-color); } /* Nível 4 */
+        .mindmap > ul > li > div > ul > li > div > ul > li > div > ul > li > div > ul > li > span { color: var(--level5-color); } /* Nível 5 */
+        .mindmap > ul > li > div > ul > li > div > ul > li > div > ul > li > div > ul > li > div > ul > li > span { color: var(--level6-color); } /* Nível 6 */
 
         /* Mantém a cor do texto quando selecionado ou em busca */
         .mindmap li > span.selected,
@@ -187,11 +226,11 @@
             position: fixed;
             bottom: 1em;
             left: 1em;
-            background-color: rgba(0,0,0,0.8);
+            background-color: var(--secondary-color);
             padding: 1em;
             border-radius: 5px;
             display: none;
-            color: #aaa;
+            z-index: 100;
         }
 
         .search-container.active {
@@ -199,13 +238,12 @@
         }
 
         .search-container input {
-            background-color: #2c3e50;
-            border: 1px solid #3498db;
-            color: white;
-            padding: 0.3em;
+            background-color: var(--input-bg-color);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
+            padding: 5px;
             border-radius: 3px;
-            outline: none;
-            font-family: inherit;
+            width: 100%;
         }
 
         .search-container .results {
@@ -352,7 +390,14 @@
 
         /* Estilo para nós com link */
         .mindmap li > span.has-link {
-            border-bottom: 1px dashed #3498db;
+            border-bottom: 1px dashed var(--primary-color);
+        }
+
+        /* Ícones Nerd Font */
+        .nf-icon {
+            font-family: var(--font-family);
+            font-size: 1.1em;
+            vertical-align: middle;
         }
 
         /* Modal de Link */
@@ -361,13 +406,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: #2c3e50;
+            background-color: var(--secondary-color);
             padding: 1em;
             border-radius: 5px;
-            border: 1px solid #3498db;
+            border: 1px solid var(--primary-color);
             display: none;
             z-index: 1000;
-            min-width: 300px;
+            width: 300px;
         }
 
         .link-modal.active {
@@ -376,36 +421,45 @@
 
         .link-modal input {
             width: 100%;
-            background-color: #34495e;
-            border: 1px solid #3498db;
-            color: white;
+            background-color: var(--input-bg-color);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
             padding: 0.5em;
             border-radius: 3px;
-            margin-bottom: 1em;
+            margin-bottom: 0.5em;
             font-family: inherit;
         }
 
-        .link-modal .buttons {
+        .link-modal .buttons,
+        .tags-modal .buttons {
             display: flex;
             justify-content: flex-end;
             gap: 0.5em;
         }
 
-        .link-modal button {
-            background-color: #3498db;
-            color: white;
-            border: none;
+        .link-modal button,
+        .tags-modal button {
             padding: 0.5em 1em;
+            border: none;
             border-radius: 3px;
             cursor: pointer;
             font-family: inherit;
         }
 
-        .link-modal button.cancel {
-            background-color: #95a5a6;
+        .link-modal .cancel,
+        .tags-modal .cancel {
+            background-color: var(--button-bg-color);
+            color: var(--button-text-color);
         }
 
-        .link-modal button:hover {
+        .link-modal .save,
+        .tags-modal .save {
+            background-color: var(--accent-color);
+            color: var(--button-text-color);
+        }
+
+        .link-modal button:hover,
+        .tags-modal button:hover {
             opacity: 0.9;
         }
 
@@ -415,10 +469,10 @@
             top: 20%;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #2c3e50;
+            background-color: var(--secondary-color);
             padding: 1em;
             border-radius: 5px;
-            border: 1px solid #3498db;
+            border: 1px solid var(--primary-color);
             display: none;
             z-index: 1000;
             min-width: 400px;
@@ -431,9 +485,9 @@
 
         .command-palette input {
             width: 100%;
-            background-color: #34495e;
-            border: 1px solid #3498db;
-            color: white;
+            background-color: var(--input-bg-color);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
             padding: 0.5em;
             border-radius: 3px;
             margin-bottom: 0.5em;
@@ -449,27 +503,36 @@
             padding: 0.5em;
             cursor: pointer;
             border-radius: 3px;
-            color: #fff;
+            color: var(--text-color);
             display: flex;
             align-items: center;
             gap: 0.5em;
         }
 
         .command-palette .command-item.selected {
-            background-color: #3498db;
+            background-color: var(--primary-color);
         }
 
-        .command-palette .command-item:hover {
-            background-color: #2980b9;
+        .command-palette .command-item:hover:not(.selected) {
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
         .command-palette .command-item .icon {
             opacity: 0.7;
-            font-size: 0.9em;
+            font-size: 1.2em;
+            min-width: 1.5em;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .command-palette .command-item.selected .icon {
+            opacity: 1;
         }
 
         .command-palette .command-item .description {
-            color: #95a5a6;
+            color: var(--level5-color);
             margin-left: auto;
             font-size: 0.9em;
         }
@@ -496,13 +559,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: #2c3e50;
+            background-color: var(--secondary-color);
             padding: 1em;
             border-radius: 5px;
-            border: 1px solid #3498db;
+            border: 1px solid var(--primary-color);
             display: none;
             z-index: 1000;
-            min-width: 300px;
+            width: 300px;
         }
 
         .tags-modal.active {
@@ -529,6 +592,12 @@
         .tags-modal .tag .remove {
             cursor: pointer;
             opacity: 0.7;
+            font-family: var(--font-family);
+        }
+
+        .tags-modal .tag .remove::after {
+            content: "󰅖";
+            margin-left: 0.2em;
         }
 
         .tags-modal .tag .remove:hover {
@@ -537,9 +606,9 @@
 
         .tags-modal input {
             width: 100%;
-            background-color: #34495e;
-            border: 1px solid #3498db;
-            color: white;
+            background-color: var(--input-bg-color);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
             padding: 0.5em;
             border-radius: 3px;
             margin-bottom: 1em;
@@ -652,123 +721,90 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(20, 30, 40, 0.95);
-            padding: 1.5em;
+            background-color: var(--secondary-color);
             border-radius: 8px;
-            border: 1px solid #3498db;
+            padding: 1.5em;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
             display: none;
             z-index: 1000;
-            min-width: 400px;
-            max-width: 600px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            font-family: 'Courier New', monospace;
-            color: #d5d5d5;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
         .settings-modal.active {
             display: block;
-            animation: fadeIn 0.2s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -48%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
         }
 
         .settings-modal h3 {
-            color: #3498db;
             margin-top: 0;
-            margin-bottom: 1em;
-            font-size: 1.2em;
-            text-align: center;
-            border-bottom: 1px solid #3498db;
+            color: var(--primary-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding-bottom: 0.5em;
         }
 
-        .settings-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5em;
-            margin-bottom: 1.5em;
-        }
-
         .settings-section {
-            margin-bottom: 0.5em;
+            margin-bottom: 1.5em;
         }
 
         .setting-item {
             display: flex;
-            flex-direction: column;
-            gap: 0.5em;
-        }
-
-        .setting-item label {
-            font-weight: bold;
-            color: #e0e0e0;
-        }
-
-        .setting-item input[type="text"] {
-            background-color: #34495e;
-            border: 1px solid #3498db;
-            color: white;
-            padding: 0.5em;
-            border-radius: 4px;
-            font-family: inherit;
-            width: 100%;
-        }
-
-        .setting-item input[type="text"]:focus {
-            outline: none;
-            border-color: #2ecc71;
-            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.3);
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5em;
         }
 
         .setting-description {
-            color: #bdc3c7;
             font-size: 0.9em;
-            margin-top: 0.2em;
-            opacity: 0.8;
+            color: var(--level5-color);
+            margin-left: 0.5em;
+        }
+
+        .settings-modal input[type="text"] {
+            width: 70%;
+            background-color: var(--input-bg-color);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
+            padding: 0.5em;
+            border-radius: 3px;
         }
 
         .settings-buttons {
             display: flex;
             justify-content: flex-end;
-            gap: 0.8em;
-            margin-top: 1em;
-            border-top: 1px solid rgba(52, 152, 219, 0.3);
-            padding-top: 1em;
+            margin-top: 1.5em;
+            gap: 0.5em;
         }
 
         .settings-modal .cancel-button {
-            background-color: #95a5a6;
-            color: white;
+            background-color: var(--button-bg-color);
+            color: var(--button-text-color);
             border: none;
-            padding: 0.5em 1em;
-            border-radius: 4px;
+            padding: 0.5em 1.5em;
+            border-radius: 3px;
             cursor: pointer;
-            font-family: inherit;
             transition: background-color 0.2s;
         }
 
         .settings-modal .save-button {
-            background-color: #2ecc71;
-            color: white;
+            background-color: var(--accent-color);
+            color: var(--button-text-color);
             border: none;
-            padding: 0.5em 1em;
-            border-radius: 4px;
+            padding: 0.5em 1.5em;
+            border-radius: 3px;
             cursor: pointer;
-            font-family: inherit;
             transition: background-color 0.2s;
         }
 
         .settings-modal .cancel-button:hover {
-            background-color: #7f8c8d;
+            background-color: var(--button-bg-color);
+            opacity: 0.9;
         }
 
         .settings-modal .save-button:hover {
-            background-color: #27ae60;
+            background-color: var(--accent-color);
+            opacity: 0.9;
         }
 
         .toggle-wrapper {
@@ -838,6 +874,209 @@
             color: #ecf0f1;
             background-color: rgba(255, 255, 255, 0.1);
         }
+
+        .toggle-label:after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 2px;
+            top: 1px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        
+        input[type="checkbox"]:checked + .toggle-label {
+            background-color: #2ecc71;
+        }
+        
+        input[type="checkbox"]:checked + .toggle-label:after {
+            transform: translateX(20px);
+        }
+        
+        /* Estilos para o select de temas */
+        select#theme-select {
+            width: 100%;
+            padding: 8px;
+            background-color: #34495e;
+            color: white;
+            border: 1px solid #3498db;
+            border-radius: 3px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        
+        select#theme-select:focus {
+            outline: none;
+            border-color: #2ecc71;
+        }
+        
+        /* Variáveis de cores para os temas */
+        :root {
+            /* Tema escuro (padrão) */
+            --bg-color: #1a1e21;
+            --text-color: #ffffff;
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --input-bg-color: #34495e;
+            --button-bg-color: #95a5a6;
+            --button-text-color: white;
+            --level1-color: #ffffff;
+            --level2-color: #e0e0e0;
+            --level3-color: #c0c0c0;
+            --level4-color: #a0a0a0;
+            --level5-color: #909090;
+            --level6-color: #808080;
+            --font-family: "JetBrainsMono Nerd Font", monospace;
+        }
+        
+        /* Temas personalizados aplicados via classe no body */
+        body.theme-light {
+            --bg-color: #f5f5f5;
+            --text-color: #333333;
+            --primary-color: #2980b9;
+            --secondary-color: #ecf0f1;
+            --accent-color: #27ae60;
+            --danger-color: #c0392b;
+            --input-bg-color: #e0e0e0;
+            --button-bg-color: #bdc3c7;
+            --button-text-color: #333333;
+            --level1-color: #333333;
+            --level2-color: #444444;
+            --level3-color: #555555;
+            --level4-color: #666666;
+            --level5-color: #777777;
+            --level6-color: #888888;
+        }
+        
+        body.theme-blue {
+            --bg-color: #1a2b3c;
+            --text-color: #f0f8ff;
+            --primary-color: #4a90e2;
+            --secondary-color: #2c4356;
+            --accent-color: #5cd6a9;
+            --danger-color: #e57373;
+            --input-bg-color: #304962;
+            --button-bg-color: #7f9db9;
+            --button-text-color: white;
+            --level1-color: #f0f8ff;
+            --level2-color: #d0e4ff;
+            --level3-color: #b0d0ff;
+            --level4-color: #90bcff;
+            --level5-color: #70a8ff;
+            --level6-color: #5094ff;
+        }
+        
+        body.theme-green {
+            --bg-color: #1b2f22;
+            --text-color: #f0fff0;
+            --primary-color: #4caf50;
+            --secondary-color: #2c3f2f;
+            --accent-color: #66bb6a;
+            --danger-color: #ef5350;
+            --input-bg-color: #304035;
+            --button-bg-color: #6b9080;
+            --button-text-color: white;
+            --level1-color: #f0fff0;
+            --level2-color: #d0f0d0;
+            --level3-color: #b0e0b0;
+            --level4-color: #90d090;
+            --level5-color: #70c070;
+            --level6-color: #50b050;
+        }
+        
+        body.theme-purple {
+            --bg-color: #2d243b;
+            --text-color: #f8f0ff;
+            --primary-color: #9c27b0;
+            --secondary-color: #3f334d;
+            --accent-color: #ba68c8;
+            --danger-color: #f44336;
+            --input-bg-color: #4a3b59;
+            --button-bg-color: #8e6da5;
+            --button-text-color: white;
+            --level1-color: #f8f0ff;
+            --level2-color: #e8d0ff;
+            --level3-color: #d8b0ff;
+            --level4-color: #c890ff;
+            --level5-color: #b870ff;
+            --level6-color: #a850ff;
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-block;
+            margin-left: 5px;
+            padding: 2px 5px;
+            background-color: var(--primary-color);
+            color: var(--button-text-color);
+            border-radius: 3px;
+            font-size: 0.8em;
+            cursor: pointer;
+        }
+
+        /* Link */
+        .has-link {
+            text-decoration: underline;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* Feedback de salvamento */
+        .save-feedback {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--accent-color);
+            color: var(--button-text-color);
+            padding: 0.5em 1em;
+            border-radius: 3px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .save-feedback.error {
+            background-color: var(--danger-color);
+        }
+
+        .save-feedback.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Close button */
+        .settings-modal .close-button,
+        .help .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            opacity: 0.7;
+            font-family: var(--font-family);
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .settings-modal .close-button:hover,
+        .help .close-button:hover {
+            opacity: 1;
+            color: var(--primary-color);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -857,7 +1096,7 @@
         <div class="commands"></div>
     </div>
     <div class="help">
-        <button class="close-button">&times;</button>
+        <button class="close-button">󰅖</button>
         <h3>Atalhos de Teclado</h3>
         <div class="help-content">
             <div class="help-section">
@@ -994,7 +1233,7 @@
         <div class="error"></div>
     </div>
     <div class="settings-modal">
-        <button class="close-button">&times;</button>
+        <button class="close-button">󰅖</button>
         <h3>Configurações</h3>
         <div class="settings-content">
             <div class="settings-section">
@@ -1019,6 +1258,22 @@
                     Salvar automaticamente após alterações (recomendado)
                 </div>
             </div>
+            
+            <div class="settings-section">
+                <div class="setting-item">
+                    <label for="theme-select">Tema:</label>
+                    <select id="theme-select">
+                        <option value="dark">Escuro (Padrão)</option>
+                        <option value="light">Claro</option>
+                        <option value="blue">Azul</option>
+                        <option value="green">Verde</option>
+                        <option value="purple">Roxo</option>
+                    </select>
+                </div>
+                <div class="setting-description">
+                    Escolha o tema de cores para a aplicação
+                </div>
+            </div>
         </div>
         <div class="settings-buttons">
             <button class="cancel-button">Cancelar</button>
@@ -1033,7 +1288,8 @@
         const { loadMindmapFromMarkdown } = require('./markdown-parser');
         const { convertMindmapToMarkdown } = require('./html-to-markdown');
         const { clipboard } = electron;
-
+        const { safeExtractNodeText } = require('./utils');
+        
         // Função para verificar se o IPC está funcionando
         function checkIPC() {
             console.log('Verificando conexão IPC...');
@@ -1050,6 +1306,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Verifica IPC no início
             checkIPC();
+
+            // Carrega o tema inicial
+            loadInitialTheme();
             
             const mindmap = document.querySelector('.mindmap');
             const searchContainer = document.querySelector('.search-container');
@@ -1082,7 +1341,7 @@
                     id: 'collapse-all',
                     title: 'Colapsar Todos os Nós',
                     description: 'Fecha todos os nós do mindmap',
-                    icon: '[-]',
+                    icon: '󰡆',
                     execute: () => {
                         const allNodes = mindmap.querySelectorAll('li:has(> div > ul)');
                         allNodes.forEach(node => {
@@ -1094,7 +1353,7 @@
                     id: 'expand-all',
                     title: 'Expandir Todos os Nós',
                     description: 'Abre todos os nós do mindmap',
-                    icon: '[+]',
+                    icon: '󰡅',
                     execute: () => {
                         const allNodes = mindmap.querySelectorAll('li:has(> div > ul)');
                         allNodes.forEach(node => {
@@ -1106,7 +1365,7 @@
                     id: 'expand-level-1',
                     title: 'Expandir Nível 1',
                     description: 'Expande apenas o primeiro nível',
-                    icon: '1️⃣',
+                    icon: '󰎥',
                     execute: () => {
                         expandToLevel(1);
                     }
@@ -1115,7 +1374,7 @@
                     id: 'expand-level-2',
                     title: 'Expandir Nível 2',
                     description: 'Expande até o segundo nível',
-                    icon: '2️⃣',
+                    icon: '󰎨',
                     execute: () => {
                         expandToLevel(2);
                     }
@@ -1124,7 +1383,7 @@
                     id: 'expand-level-3',
                     title: 'Expandir Nível 3',
                     description: 'Expande até o terceiro nível',
-                    icon: '3️⃣',
+                    icon: '󰎫',
                     execute: () => {
                         expandToLevel(3);
                     }
@@ -1133,7 +1392,7 @@
                     id: 'show-tags-summary',
                     title: 'Mostrar Resumo por Tags',
                     description: 'Exibe um resumo dos nós agrupados por tag',
-                    icon: '@',
+                    icon: '󰓹',
                     execute: () => {
                         showTagsSummary();
                     }
@@ -1142,7 +1401,7 @@
                     id: 'save-mindmap',
                     title: 'Salvar Mindmap',
                     description: 'Salva o mindmap imediatamente',
-                    icon: '💾',
+                    icon: '󰆓',
                     execute: () => {
                         forceSaveMindmap();
                     }
@@ -1151,7 +1410,7 @@
                     id: 'open-settings',
                     title: 'Configurações',
                     description: 'Abre a janela de configurações',
-                    icon: '⚙️',
+                    icon: '󰒓',
                     execute: () => {
                         openSettings();
                     }
@@ -1952,7 +2211,7 @@
                 tagsContainer.innerHTML = currentTags.map(tag => `
                     <div class="tag">
                         ${tag}
-                        <span class="remove" data-tag="${tag}">&times;</span>
+                        <span class="remove" data-tag="${tag}"></span>
                     </div>
                 `).join('');
 
@@ -2361,29 +2620,38 @@
 
             // Função para abrir as configurações
             function openSettings() {
-                console.log('Abrindo modal de configurações');
+                console.log('Abrindo janela de configurações...');
                 
-                // Carrega as configurações atuais
-                ipcRenderer.invoke('get-settings').then(settings => {
-                    console.log('Configurações carregadas:', settings);
-                    
-                    // Preenche o formulário com as configurações
-                    document.getElementById('save-path').value = settings.savePath || '';
-                    document.getElementById('auto-save').checked = settings.autoSave !== false; // true por padrão
-                    
-                    // Exibe o modal
-                    const settingsModal = document.querySelector('.settings-modal');
-                    settingsModal.classList.add('active');
-                }).catch(error => {
-                    console.error('Erro ao carregar configurações:', error);
-                    showSaveFeedback('Erro ao carregar configurações', true);
-                });
+                try {
+                    ipcRenderer.invoke('get-settings').then(settings => {
+                        console.log('Configurações carregadas:', settings);
+                        
+                        // Preenche o formulário com as configurações
+                        document.getElementById('save-path').value = settings.savePath || '';
+                        document.getElementById('auto-save').checked = settings.autoSave !== false; // true por padrão
+                        
+                        // Seleciona o tema atual
+                        const themeSelect = document.getElementById('theme-select');
+                        themeSelect.value = settings.theme || 'dark';
+                        
+                        // Exibe o modal
+                        const settingsModal = document.querySelector('.settings-modal');
+                        settingsModal.classList.add('active');
+                    }).catch(error => {
+                        console.error('Erro ao carregar configurações:', error);
+                        showSaveFeedback('Erro ao carregar configurações', true);
+                    });
+                } catch (error) {
+                    console.error('Erro ao abrir configurações:', error);
+                    showSaveFeedback('Erro ao abrir configurações', true);
+                }
             }
             
             // Função para salvar as configurações
             function saveSettings() {
                 const savePath = document.getElementById('save-path').value;
                 const autoSave = document.getElementById('auto-save').checked;
+                const theme = document.getElementById('theme-select').value;
                 
                 // Validação básica
                 if (!savePath) {
@@ -2393,7 +2661,8 @@
                 
                 const settings = {
                     savePath,
-                    autoSave
+                    autoSave,
+                    theme
                 };
                 
                 console.log('Salvando configurações:', settings);
@@ -2402,15 +2671,59 @@
                     console.log('Configurações salvas com sucesso');
                     hideSettingsModal();
                     showSaveFeedback('Configurações salvas com sucesso');
+                    
+                    // Aplica o tema imediatamente
+                    applyTheme(theme);
                 }).catch(error => {
                     console.error('Erro ao salvar configurações:', error);
                     showSaveFeedback('Erro ao salvar configurações: ' + error.message, true);
                 });
             }
             
+            // Função para aplicar o tema selecionado
+            function applyTheme(themeName) {
+                // Remove todas as classes de tema anteriores
+                document.body.classList.remove('theme-dark', 'theme-light', 'theme-blue', 'theme-green', 'theme-purple');
+                
+                // Adiciona a nova classe de tema
+                if (themeName && themeName !== 'dark') {
+                    document.body.classList.add(`theme-${themeName}`);
+                }
+                
+                console.log(`Tema "${themeName}" aplicado`);
+            }
+            
+            // Carrega e aplica o tema inicial
+            function loadInitialTheme() {
+                try {
+                    ipcRenderer.invoke('get-settings').then(settings => {
+                        if (settings && settings.theme) {
+                            applyTheme(settings.theme);
+                        }
+                    }).catch(error => {
+                        console.error('Erro ao carregar tema inicial:', error);
+                    });
+                } catch (error) {
+                    console.error('Erro ao carregar tema inicial:', error);
+                }
+            }
+            
             // Função para fechar o modal de configurações
             function hideSettingsModal() {
                 document.querySelector('.settings-modal').classList.remove('active');
+                
+                // Restaura o tema original quando o modal é fechado sem salvar
+                try {
+                    ipcRenderer.invoke('get-settings').then(settings => {
+                        if (settings && settings.theme) {
+                            applyTheme(settings.theme);
+                        }
+                    }).catch(error => {
+                        console.error('Erro ao restaurar tema original:', error);
+                    });
+                } catch (error) {
+                    console.error('Erro ao restaurar tema original:', error);
+                }
             }
 
             // Função para coletar nós por tag
@@ -2423,9 +2736,8 @@
                 spans.forEach(span => {
                     const tags = JSON.parse(span.dataset.tags || '[]');
                     
-                    // Busca o texto preferencialmente em .node-text
-                    const nodeTextElement = span.querySelector('.node-text');
-                    const text = nodeTextElement ? nodeTextElement.textContent.trim() : span.textContent.trim();
+                    // Usa a função safeExtractNodeText para extrair o texto do nó corretamente
+                    const text = safeExtractNodeText(span);
                     
                     console.log(`Nó: ${text}, Tags: ${tags.join(', ')}`);
                     
@@ -2459,10 +2771,8 @@
                 console.log("Obtendo hierarquia para nó:", nodeSpan);
                 const hierarchy = [];
                 
-                // Adiciona o nó atual - buscando prioritariamente o elemento .node-text
-                const nodeTextElement = nodeSpan.querySelector('.node-text');
-                const nodeText = nodeTextElement ? nodeTextElement.textContent.trim() 
-                                                : nodeSpan.textContent.trim();
+                // Usa safeExtractNodeText para o nó atual
+                const nodeText = safeExtractNodeText(nodeSpan);
                 hierarchy.push(nodeText);
                 console.log("Texto do nó atual:", nodeText);
                 
@@ -2788,6 +3098,12 @@
             document.querySelector('.settings-modal .close-button').addEventListener('click', hideSettingsModal);
             document.querySelector('.settings-modal .cancel-button').addEventListener('click', hideSettingsModal);
             document.querySelector('.settings-modal .save-button').addEventListener('click', saveSettings);
+            
+            // Adiciona event listener para o select de temas para preview em tempo real
+            document.getElementById('theme-select').addEventListener('change', function(e) {
+                // Aplica o tema selecionado para preview
+                applyTheme(e.target.value);
+            });
             
             // Adiciona event listener para fechar o modal com a tecla ESC
             document.addEventListener('keydown', function(e) {

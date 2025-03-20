@@ -6,6 +6,8 @@ const electron = require('electron');
 // Configuração padrão
 const defaultConfig = {
     savePath: path.join(os.homedir(), 'lifemap.md'),
+    autoSave: true,
+    theme: 'dark'
 };
 
 // Diretório padrão para os arquivos de configuração

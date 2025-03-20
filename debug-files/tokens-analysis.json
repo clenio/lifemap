@@ -1,0 +1,32 @@
+[
+  {
+    "type": "space",
+    "raw": "\n"
+  },
+  {
+    "type": "heading",
+    "raw": "# Meu Mindmap\n\n",
+    "depth": 1,
+    "text": "Meu Mindmap",
+    "tokens": [
+      {
+        "type": "text",
+        "raw": "Meu Mindmap",
+        "text": "Meu Mindmap"
+      }
+    ]
+  },
+  {
+    "type": "heading",
+    "raw": "## dois\n\n",
+    "depth": 2,
+    "text": "dois",
+    "tokens": [
+      {
+        "type": "text",
+        "raw": "dois",
+        "text": "dois"
+      }
+    ]
+  }
+]

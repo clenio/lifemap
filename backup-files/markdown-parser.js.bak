@@ -1,6 +1,6 @@
-const { marked } = require('marked');
 const fs = require('fs');
 const path = require('path');
+const marked = require('marked');
 const os = require('os');
 const config = require('./config');
 
@@ -101,6 +101,62 @@ function extractLinkFromText(text) {
     return { text };
 }
 
+/**
+ * Extrai tags de um texto e retorna o texto limpo e as tags extraídas
+ * @param {string} text - O texto original que pode conter tags
+ * @returns {Object} Um objeto com o texto limpo e as tags extraídas
+ */
+function extractTagsFromText(text) {
+    if (!text) return { cleanText: '', tags: [] };
+    
+    // Detecta e extrai tags em vários formatos
+
+    // Caso 1: Linha exclusiva de tags (ex: "tags: tag1, tag2")
+    if (/^\s*tags:/.test(text)) {
+        const tagsText = text.trim().replace(/^\s*tags:/, '').trim();
+        const tags = tagsText.split(',').map(tag => tag.trim()).filter(Boolean);
+        return { cleanText: '', tags };
+    }
+    
+    // Caso 2: Texto multilinhas com uma ou mais linhas de tags
+    const lines = text.split('\n');
+    const nonTagLines = [];
+    const tagLines = [];
+    
+    lines.forEach(line => {
+        if (/^\s*tags:/.test(line)) {
+            tagLines.push(line.trim());
+        } else {
+            nonTagLines.push(line);
+        }
+    });
+    
+    if (tagLines.length > 0) {
+        const cleanText = nonTagLines.join('\n').trim();
+        const tags = [];
+        
+        tagLines.forEach(tagLine => {
+            const tagsText = tagLine.replace(/^\s*tags:/, '').trim();
+            const lineTags = tagsText.split(',').map(tag => tag.trim()).filter(Boolean);
+            tags.push(...lineTags);
+        });
+        
+        return { cleanText, tags };
+    }
+    
+    // Caso 3: Texto com tags no final (ex: "texto texto tags: tag1, tag2")
+    const inlineMatch = text.match(/(.*)\s+tags:\s*(.+?)$/s);
+    if (inlineMatch) {
+        const cleanText = inlineMatch[1].trim();
+        const tagsText = inlineMatch[2].trim();
+        const tags = tagsText.split(',').map(tag => tag.trim()).filter(Boolean);
+        return { cleanText, tags };
+    }
+    
+    // Caso 4: Sem tags
+    return { cleanText: text, tags: [] };
+}
+
 function convertTokensToMindmap(tokens) {
     const root = { text: '', children: [] };
     const stack = [{ node: root, level: 0 }];
@@ -136,43 +192,44 @@ function convertTokensToMindmap(tokens) {
         } else if (token.type === 'paragraph' && token.text.startsWith('tags:') && lastNode) {
             // Processa linha de tags
             const tagsText = token.text.replace('tags:', '').trim();
-            // Divide a string de tags, considerando que podem estar separadas por vírgulas ou espaços
-            const tagsList = tagsText.split(/,\s*|\s+/);
-            // Filtra para remover entradas vazias e faz trim em cada tag
-            lastNode.tags = tagsList.filter(tag => tag.trim()).map(tag => tag.trim());
+            lastNode.tags = tagsText.split(',').map(tag => tag.trim());
             
         } else if (token.type === 'list') {
-            // Nota: Com a mudança para usar cabeçalhos em todos os níveis, esta parte do código
-            // será menos utilizada, mas mantida para compatibilidade com markdown existente
             currentList = token;
             const level = (stack[stack.length - 1].level || 0) + 1;
             
             token.items.forEach(item => {
-                // Processa o texto principal do item
-                const { text: cleanText, link } = extractLinkFromText(item.text);
+                // Extrai tags e limpa o texto do item
+                const { cleanText: itemText, tags } = extractTagsFromText(item.text);
+                
+                // Extrai links do texto limpo
+                const { text: finalText, link } = extractLinkFromText(itemText);
                 
                 const newNode = {
-                    text: cleanText,
+                    text: finalText,
                     children: [],
                     link,
-                    tags: []
+                    tags: tags
                 };
                 
                 const parent = stack[stack.length - 1].node;
                 parent.children.push(newNode);
                 lastNode = newNode;
                 
-                // Processa os tokens do item para encontrar as tags
+                // Processa os tokens do item para encontrar tags adicionais
                 if (item.tokens) {
                     item.tokens.forEach(subToken => {
-                        if (subToken.type === 'text' && subToken.text.startsWith('tags:')) {
-                            const tagsText = subToken.text.replace('tags:', '').trim();
-                            // Divide a string de tags, considerando que podem estar separadas por vírgulas ou espaços
-                            const tagsList = tagsText.split(/,\s*|\s+/);
-                            // Filtra para remover entradas vazias e faz trim em cada tag
-                            newNode.tags = tagsList.filter(tag => tag.trim()).map(tag => tag.trim());
+                        if (subToken.type === 'text') {
+                            const { tags: extractedTags } = extractTagsFromText(subToken.text);
+                            if (extractedTags.length > 0) {
+                                // Adiciona as tags extraídas às tags existentes (se houver)
+                                newNode.tags = [...newNode.tags, ...extractedTags];
+                            }
                         }
                     });
+                    
+                    // Garante que as tags são únicas
+                    newNode.tags = Array.from(new Set(newNode.tags));
                 }
                 
                 // Se o item tem subitens, processa recursivamente
@@ -208,118 +265,4 @@ function generateHTML(nodes) {
         const spanClasses = [];
         
         if (node.link) {
-            spanAttrs.push(`data-link="${node.link}"`);
-            spanClasses.push('has-link');
-        }
-        
-        if (node.tags && node.tags.length > 0) {
-            spanAttrs.push(`data-tags='${JSON.stringify(node.tags)}'`);
-        }
-        
-        if (node.children && node.children.length > 0) {
-            spanClasses.push('has-children');
-        }
-
-        if (spanClasses.length > 0) {
-            spanAttrs.push(`class="${spanClasses.join(' ')}"`);
-        }
-        
-        // Cria um span principal que contém tanto o texto quanto as tags
-        html += `<span ${spanAttrs.join(' ')}>`;
-        
-        // Adiciona um span específico para o texto do nó
-        html += `<span class="node-text">${node.text}</span>`;
-        
-        // Adiciona as tags em um span separado
-        if (node.tags && node.tags.length > 0) {
-            html += `<span class="tags">${node.tags.map(tag => 
-                `<span class="tag">${tag}</span>`).join('')}</span>`;
-        }
-        
-        html += '</span>';
-        
-        if (node.children && node.children.length > 0) {
-            html += '<div>';
-            html += generateHTML(node.children);
-            html += '</div>';
-        }
-        
-        html += '</li>';
-    });
-    html += '</ul>';
-    return html;
-}
-
-function initializeMarkdownFile(filePath) {
-    try {
-        // Verifica se o arquivo existe
-        if (!fs.existsSync(filePath)) {
-            // Certifica-se de que o diretório existe
-            const directory = path.dirname(filePath);
-            if (!fs.existsSync(directory)) {
-                fs.mkdirSync(directory, { recursive: true });
-            }
-            
-            // Se não existe, cria com a estrutura inicial
-            const initialContent = '---\ntags: []\n---\n\n# Root\n';
-            fs.writeFileSync(filePath, initialContent, 'utf-8');
-            return true;
-        }
-
-        // Se existe, verifica se tem a seção de metadados
-        const content = fs.readFileSync(filePath, 'utf-8');
-        if (!content.match(METADATA_REGEX)) {
-            // Se não tem metadados, adiciona no início do arquivo
-            const newContent = '---\ntags: []\n---\n\n' + content;
-            fs.writeFileSync(filePath, newContent, 'utf-8');
-            return true;
-        }
-
-        return false;
-    } catch (error) {
-        console.error('Erro ao inicializar arquivo markdown:', error);
-        return false;
-    }
-}
-
-function loadMindmapFromMarkdown() {
-    try {
-        // Usa o caminho da configuração
-        const filePath = config.getSavePath();
-        
-        // Inicializa o arquivo se ele não existir ou não tiver metadados
-        initializeMarkdownFile(filePath);
-        
-        // Lê o conteúdo do arquivo
-        const content = fs.readFileSync(filePath, 'utf-8');
-        
-        // Extrai os metadados
-        const { metadata, content: markdownContent } = parseMetadata(content);
-        
-        // Usa o Marked para converter o markdown para tokens
-        const tokens = marked.lexer(markdownContent);
-        
-        // Converte os tokens para o formato do mindmap
-        const nodes = convertTokensToMindmap(tokens);
-        
-        // Gera o HTML a partir dos nós
-        const html = generateHTML(nodes);
-        
-        return {
-            html,
-            availableTags: metadata.tags || []
-        };
-    } catch (error) {
-        console.error('Erro ao carregar mindmap:', error);
-        // Retorna um mindmap padrão em caso de erro
-        return {
-            html: '<ul><li><span><span class="node-text">Root</span></span></li></ul>',
-            availableTags: []
-        };
-    }
-}
-
-module.exports = {
-    loadMindmapFromMarkdown,
-    updateMarkdownMetadata
-}; 
+            spanAttrs.push(`

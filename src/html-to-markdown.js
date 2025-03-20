@@ -35,41 +35,42 @@ function convertNodeToMarkdown(node, level = 1) {
         }
 
         // Verifica se há conteúdo de texto no span
-        const textContent = span.textContent || span.innerText || '';
-        const text = textContent.trim();
+        const nodeTextElement = span.querySelector('.node-text');
+        let text = '';
+        
+        if (nodeTextElement) {
+            // Prioriza o texto do elemento .node-text se ele existir
+            text = nodeTextElement.textContent.trim();
+        } else {
+            // Fallback para o texto do span, removendo o texto das tags
+            const tagsSpan = span.querySelector('.tags');
+            if (tagsSpan) {
+                // Remove o conteúdo das tags do texto do span
+                const fullText = span.textContent || span.innerText || '';
+                const tagsText = tagsSpan.textContent || tagsSpan.innerText || '';
+                text = fullText.replace(tagsText, '').trim();
+            } else {
+                // Se não houver tags, usa o texto completo do span
+                text = (span.textContent || span.innerText || '').trim();
+            }
+        }
         
         const link = span.dataset.link;
         const tags = span.dataset.tags ? JSON.parse(span.dataset.tags) : [];
         
         // Adiciona os marcadores de nível
-        const indentation = level <= 3 ? '' : '\t'.repeat(Math.max(0, level - 4));
-        
-        // Adiciona o texto com link se houver
-        if (level <= 3) {
-            markdown += '#'.repeat(level) + ' ';
-            if (link) {
-                markdown += `[${text}](${link})`;
-            } else {
-                markdown += text;
-            }
-            markdown += '\n';
+        // Todos os níveis agora são tratados como títulos (#)
+        markdown += '#'.repeat(level) + ' ';
+        if (link) {
+            markdown += `[${text}](${link})`;
         } else {
-            markdown += indentation + '- ';
-            if (link) {
-                markdown += `[${text}](${link})`;
-            } else {
-                markdown += text;
-            }
-            markdown += '\n';
+            markdown += text;
         }
+        markdown += '\n';
         
         // Adiciona as tags em uma linha separada se houver
         if (tags.length > 0) {
-            if (level <= 3) {
-                markdown += `tags: ${tags.join(', ')}\n`;
-            } else {
-                markdown += indentation + `tags: ${tags.join(', ')}\n`;
-            }
+            markdown += `tags: ${tags.join(', ')}\n`;
         }
         
         // Adiciona uma linha em branco após cada nó
