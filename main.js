@@ -25,11 +25,19 @@ function createWindow() {
       width: 1200,
       height: 800,
       icon: iconPath,
+      transparent: true,
+      titleBarStyle: 'hiddenInset',
+      vibrancy: 'under-window',
+      visualEffectState: 'active',
+      trafficLightPosition: { x: 15, y: 10 },
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
       },
     });
+
+    // Set background color to transparent 
+    mainWindow.setBackgroundColor('#00000000');
 
     console.log("Carregando index.html");
     mainWindow.loadFile("src/index.html");
@@ -72,11 +80,18 @@ function createSettingsWindow() {
       parent: mainWindow,
       modal: true,
       icon: iconPath,
+      transparent: true,
+      titleBarStyle: 'hiddenInset',
+      vibrancy: 'under-window',
+      visualEffectState: 'active',
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
       },
     });
+
+    // Set background color to transparent
+    settingsWindow.setBackgroundColor('#00000000');
 
     console.log("Carregando arquivo settings.html");
     settingsWindow.loadFile("src/settings.html");

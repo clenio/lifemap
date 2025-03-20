@@ -17,9 +17,31 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background-color: #1a1e21;
-            padding: 2em;
+            background-color: transparent;
+            padding: 0;
             color: #ffffff;
+        }
+
+        .titlebar {
+            height: 38px;
+            width: 100%;
+            -webkit-app-region: drag;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .title {
+            color: #3498db;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 0 2em 2em 2em;
+            flex: 1;
         }
 
         h1 {
@@ -118,23 +140,27 @@
     </style>
 </head>
 <body>
-    <div class="settings-container">
-        <h1>Configurações do LifeMap</h1>
-        
-        <div class="form-group">
-            <label for="save-path">Local de salvamento:</label>
-            <div class="input-group">
-                <input type="text" id="save-path" readonly>
-                <button class="browse" id="browse-button">Procurar...</button>
+    <div class="titlebar">
+        <div class="title">Configurações do LifeMap</div>
+    </div>
+    
+    <div class="content">
+        <div class="settings-container">
+            <div class="form-group">
+                <label for="save-path">Local de salvamento:</label>
+                <div class="input-group">
+                    <input type="text" id="save-path" readonly>
+                    <button class="browse" id="browse-button">Procurar...</button>
+                </div>
             </div>
+            
+            <div class="buttons">
+                <button class="cancel" id="cancel-button">Cancelar</button>
+                <button id="save-button">Salvar Configurações</button>
+            </div>
+            
+            <div class="message" id="message"></div>
         </div>
-        
-        <div class="buttons">
-            <button class="cancel" id="cancel-button">Cancelar</button>
-            <button id="save-button">Salvar Configurações</button>
-        </div>
-        
-        <div class="message" id="message"></div>
     </div>
     
     <script>

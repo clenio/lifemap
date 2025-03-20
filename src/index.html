@@ -43,16 +43,30 @@
 
         body {
             margin: 0;
-            padding: 20px;
-            background-color: var(--bg-color);
+            padding: 0;
+            background-color: transparent;
             font-family: var(--font-family);
             color: var(--text-color);
             line-height: 1.6;
             height: 100vh;
             box-sizing: border-box;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
+        .titlebar {
+            height: 38px;
+            width: 100%;
+            -webkit-app-region: drag;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 20px;
+            flex-shrink: 0; /* Impede que a barra de título encolha */
+        }
+
+        /* Add padding for macOS traffic lights */
         .mindmap {
             position: relative;
             padding: 20px;
@@ -61,6 +75,7 @@
             width: 100%;
             scrollbar-width: none; /* Firefox */
             -ms-overflow-style: none; /* IE and Edge */
+            flex: 1; /* Ocupa todo o espaço restante */
         }
 
         .mindmap::-webkit-scrollbar {
@@ -75,6 +90,41 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 0.5em;
+        }
+
+        /* Restabelece o estilo padrão para o nó raiz */
+        .mindmap > ul > li > span {
+            font-size: inherit;
+            font-weight: normal;
+            padding: 0.2em;
+            border-radius: 0;
+            background-color: transparent;
+            color: inherit;
+            opacity: 0.4;
+            box-shadow: none;
+            transform: none;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Posicionamento do nó raiz */
+        .mindmap > ul > li {
+            margin-left: 20px; /* Espaçamento à esquerda para o nó raiz */
+            margin-top: 15px; /* Espaçamento superior para melhor posicionamento visual */
+        }
+
+        .mindmap > ul > li > span:hover {
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Estilo específico para o nó raiz (root) */
+        .mindmap > ul > li {
+            margin-left: 20px; /* Espaçamento à esquerda para o nó raiz */
+        }
+
+        /* Nós filhos do root (primeiro nível) */
+        .mindmap > ul > li > ul > li {
+            margin-top: 5px; /* Espaçamento vertical entre os nós filhos */
         }
 
         .mindmap li {
@@ -202,12 +252,18 @@
             border-radius: 3px;
             outline: 1px solid #3498db;
             opacity: 1;
+            color: white !important; /* Texto branco para nós selecionados */
         }
 
         /* Mantém opacidade total para o nó selecionado e seus filhos */
         .mindmap li > span.selected,
         .mindmap li > span.selected ~ div span {
             opacity: 1;
+        }
+
+        /* Filhos diretos e todos os descendentes do nó selecionado recebem cor branca */
+        .mindmap li > span.selected ~ div span {
+            color: white !important;
         }
 
         /* Mantém opacidade total para os pais do nó selecionado */
@@ -915,14 +971,14 @@
         /* Variáveis de cores para os temas */
         :root {
             /* Tema escuro (padrão) */
-            --bg-color: #1a1e21;
+            --bg-color: rgba(26, 30, 33, 0.8);
             --text-color: #ffffff;
             --primary-color: #3498db;
-            --secondary-color: #2c3e50;
+            --secondary-color: rgba(44, 62, 80, 0.7);
             --accent-color: #2ecc71;
             --danger-color: #e74c3c;
-            --input-bg-color: #34495e;
-            --button-bg-color: #95a5a6;
+            --input-bg-color: rgba(52, 73, 94, 0.8);
+            --button-bg-color: rgba(149, 165, 166, 0.8);
             --button-text-color: white;
             --level1-color: #ffffff;
             --level2-color: #e0e0e0;
@@ -935,14 +991,14 @@
         
         /* Temas personalizados aplicados via classe no body */
         body.theme-light {
-            --bg-color: #f5f5f5;
+            --bg-color: rgba(245, 245, 245, 0.8);
             --text-color: #333333;
             --primary-color: #2980b9;
-            --secondary-color: #ecf0f1;
+            --secondary-color: rgba(236, 240, 241, 0.7);
             --accent-color: #27ae60;
             --danger-color: #c0392b;
-            --input-bg-color: #e0e0e0;
-            --button-bg-color: #bdc3c7;
+            --input-bg-color: rgba(224, 224, 224, 0.8);
+            --button-bg-color: rgba(189, 195, 199, 0.8);
             --button-text-color: #333333;
             --level1-color: #333333;
             --level2-color: #444444;
@@ -953,13 +1009,13 @@
         }
         
         body.theme-blue {
-            --bg-color: #1a2b3c;
+            --bg-color: rgba(26, 43, 60, 0.8);
             --text-color: #f0f8ff;
             --primary-color: #4a90e2;
-            --secondary-color: #2c4356;
+            --secondary-color: rgba(44, 67, 86, 0.7);
             --accent-color: #5cd6a9;
             --danger-color: #e57373;
-            --input-bg-color: #304962;
+            --input-bg-color: rgba(48, 73, 98, 0.8);
             --button-bg-color: #7f9db9;
             --button-text-color: white;
             --level1-color: #f0f8ff;
@@ -1080,6 +1136,7 @@
     </style>
 </head>
 <body>
+    <div class="titlebar"></div>
     <div class="mindmap">
         <ul>
             <li>
